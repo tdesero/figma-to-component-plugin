@@ -1,0 +1,15 @@
+{
+  "name": "MyPlugin",
+  "version": "1.0.0",
+  "description": "Your Figma plugin",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc.cmd -p tsconfig.json",
+    "watch": "tsc.cmd -p tsconfig.json --watch"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.42.1"
+  }
+}
