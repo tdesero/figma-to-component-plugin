@@ -1,5 +1,4 @@
 
-figma.showUI(__html__);
 
 /* helpers */
 function componentToHex(c): String {
@@ -212,11 +211,27 @@ function createHTML() {
   return html;
 }
 
-figma.ui.postMessage({
-  css: createCSS(),
-  html: createHTML()
-});
 
+figma.parameters.on('input', ({ parameters, key, query, result }: ParameterInputEvent) => {
+  switch (key) {
+    case 'framework':
+      const frameworks = ['react', 'html']
+      result.setSuggestions(frameworks.filter(s => s.includes(query)))
+      break
+    default:
+      return
+  }
+})
+
+figma.on('run', ({ command, parameters }: RunEvent) => {
+  console.log(command, parameters);
+  figma.showUI(__html__);
+  figma.ui.postMessage({
+    css: createCSS(),
+    html: createHTML(),
+    framework: parameters.framework
+  });
+});
 
 // Make sure to close the plugin when you're done. Otherwise the plugin will
 // keep running, which shows the cancel button at the bottom of the screen.

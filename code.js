@@ -1,4 +1,3 @@
-figma.showUI(__html__);
 /* helpers */
 function componentToHex(c) {
     var hex = Math.round(c * 255).toString(16);
@@ -189,9 +188,24 @@ function createHTML() {
     html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
     return html;
 }
-figma.ui.postMessage({
-    css: createCSS(),
-    html: createHTML()
+figma.parameters.on('input', ({ parameters, key, query, result }) => {
+    switch (key) {
+        case 'framework':
+            const frameworks = ['react', 'html'];
+            result.setSuggestions(frameworks.filter(s => s.includes(query)));
+            break;
+        default:
+            return;
+    }
+});
+figma.on('run', ({ command, parameters }) => {
+    console.log(command, parameters);
+    figma.showUI(__html__);
+    figma.ui.postMessage({
+        css: createCSS(),
+        html: createHTML(),
+        framework: parameters.framework
+    });
 });
 // Make sure to close the plugin when you're done. Otherwise the plugin will
 // keep running, which shows the cancel button at the bottom of the screen.

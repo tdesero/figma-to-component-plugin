@@ -9,12 +9,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
 
 <div id="preview"></div>
-The Result Code
+The <span id="framework"></span> Code
 
 <pre><code class=" hljs" id="code"></code></pre>
 
 <script>
   onmessage = (event) => {
+    const framework = event.data.pluginMessage.framework;
+
     const html = html_beautify(event.data.pluginMessage.html, {
       indent_size: "2",
       indent_char: " ",
@@ -57,14 +59,29 @@ The Result Code
     const highlightedHtml = hljs.highlight(html, { language: "xml" }).value;
     const highlightedCss = hljs.highlight(css, { language: "css" }).value;
 
+    document.querySelector("#framework").innerText = framework;
+
     document.querySelector("#preview").innerHTML =
       html + "<style>" + css + "</style>";
 
-    document.querySelector("#code").innerHTML =
-      highlightedHtml +
-      "\n\n" +
-      "&lt;style&gt;\n" +
-      highlightedCss +
-      "\n&lt;/style&gt;";
+    switch (framework) {
+      case "react":
+        document.querySelector("#code").innerText =
+          "export const Component = () => { \nreturn(\n" +
+          html.replace(/class=/g, "className=") +
+          ")}\n\n" +
+          css;
+        break;
+      case "html":
+        document.querySelector("#code").innerHTML =
+          highlightedHtml +
+          "\n\n" +
+          "&lt;style&gt;\n" +
+          highlightedCss +
+          "\n&lt;/style&gt;";
+        break;
+      default:
+        return;
+    }
   };
 </script>
