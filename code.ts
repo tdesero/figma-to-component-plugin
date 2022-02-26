@@ -58,11 +58,17 @@ function paddingProp(node) {
 function displayProp(node) {
   const coord = node.id === figma.currentPage.selection[0].id ? '' : `left: ${node.x}px; top: ${node.y}px;`;
 
+  const positionFromParent = (node) => {
+    if ( node.id === figma.currentPage.selection[0].id ) {
+      return 'relative';
+    }
+    return `${(node.parent.layoutMode === 'NONE' || !node.parent.layoutMode) ? `absolute; ${coord}` : 'relative'}`
+  }
+
   if (!node.layoutMode || (node.layoutMode === 'NONE')) return `
     height: ${node.type === 'TEXT' ? 'auto' : node.height + 'px'};
     width: ${node.type === 'TEXT' ? 'auto' : node.width + 'px'};
-    position: ${(node.parent.layoutMode === 'NONE' && !(node.id === figma.currentPage.selection[0].id)) ? 'absolute' : 'static'};
-    ${coord}
+    position: ${positionFromParent(node)};
   `;
 
   const alignItemsMap = {
@@ -80,9 +86,10 @@ function displayProp(node) {
   }
 
   if (node.layoutMode === 'VERTICAL'){
+    // position: ${["FRAME", "COMPONENT", "INSTANCE"].includes(node.type) ? 'relative' : 'static'}; /* dont get this... */
     return `
       display: flex;
-      position: ${["FRAME", "COMPONENT", "INSTANCE"].includes(node.type) ? 'relative' : 'static'};
+      position: relative;
       flex-direction: column;
       gap: ${node.itemSpacing}px;
       height: ${node.primaryAxisSizingMode === 'AUTO' ? 'auto' : node.height + 'px'};
@@ -104,6 +111,18 @@ function displayProp(node) {
       justify-content: ${justifyContentMap[node.primaryAxisAlignItems]};
     `
   }
+}
+
+function boxShadow(node) {
+  if (!node.effects || node.effects.length === 0) return '';
+  const shadows = node.effects.filter(effect => effect.type === 'DROP_SHADOW' );
+  if (shadows.length === 0) return '';
+  
+  let css = 'box-shadow: '
+  shadows.forEach(s => {
+    css += `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${s.spread}px ${rgbaColor(s.color, s.color.a)}`
+  });
+  return css +  ';';
 }
 /* css props helepers end */
 
@@ -129,6 +148,7 @@ function nodeCSS(node) {
       opacity: ${node.opacity};
       ${paddingProp(node)}
       ${displayProp(node)}
+      ${boxShadow(node)}
       margin: 0;
     `
   }
@@ -229,7 +249,8 @@ figma.on('run', ({ command, parameters }: RunEvent) => {
   figma.ui.postMessage({
     css: createCSS(),
     html: createHTML(),
-    framework: parameters.framework
+    framework: parameters.framework,
+    name: figma.currentPage?.selection?.[0]?.name
   });
 });
 

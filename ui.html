@@ -9,11 +9,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
 
 <div id="preview"></div>
-The <span id="framework"></span> Code
+<button id="copy">Copy <span id="framework"></span> Code</button>
 
 <pre><code class=" hljs" id="code"></code></pre>
 
 <script>
+  /* helpers */
+  function toPascalCase(string) {
+    return `${string}`
+      .replace(new RegExp(/[-_]+/, "g"), " ")
+      .replace(new RegExp(/[^\w\s]/, "g"), "")
+      .replace(
+        new RegExp(/\s+(.)(\w*)/, "g"),
+        ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+      )
+      .replace(new RegExp(/\w/), (s) => s.toUpperCase());
+  }
+  /* helpers end */
+
   onmessage = (event) => {
     const framework = event.data.pluginMessage.framework;
 
@@ -56,6 +69,8 @@ The <span id="framework"></span> Code
       indent_empty_lines: false,
     });
 
+    const name = toPascalCase(event.data.pluginMessage.name);
+
     const highlightedHtml = hljs.highlight(html, { language: "xml" }).value;
     const highlightedCss = hljs.highlight(css, { language: "css" }).value;
 
@@ -67,7 +82,9 @@ The <span id="framework"></span> Code
     switch (framework) {
       case "react":
         document.querySelector("#code").innerText =
-          "export const Component = () => { \nreturn(\n" +
+          "export const " +
+          name +
+          " = () => { \nreturn(\n" +
           html.replace(/class=/g, "className=") +
           ")}\n\n" +
           css;
@@ -83,5 +100,29 @@ The <span id="framework"></span> Code
       default:
         return;
     }
+
+    const copyToClipboard = (str) => {
+      const el = document.createElement("textarea");
+      el.value = str;
+      el.setAttribute("readonly", "");
+      el.style.position = "absolute";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      const selected =
+        document.getSelection().rangeCount > 0
+          ? document.getSelection().getRangeAt(0)
+          : false;
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      if (selected) {
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(selected);
+      }
+    };
+
+    document.querySelector("#copy").onclick = copyToClipboard(
+      document.querySelector("#code").innerText
+    );
   };
 </script>

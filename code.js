@@ -49,12 +49,17 @@ function paddingProp(node) {
 }
 function displayProp(node) {
     const coord = node.id === figma.currentPage.selection[0].id ? '' : `left: ${node.x}px; top: ${node.y}px;`;
+    const positionFromParent = (node) => {
+        if (node.id === figma.currentPage.selection[0].id) {
+            return 'relative';
+        }
+        return `${(node.parent.layoutMode === 'NONE' || !node.parent.layoutMode) ? `absolute; ${coord}` : 'relative'}`;
+    };
     if (!node.layoutMode || (node.layoutMode === 'NONE'))
         return `
     height: ${node.type === 'TEXT' ? 'auto' : node.height + 'px'};
     width: ${node.type === 'TEXT' ? 'auto' : node.width + 'px'};
-    position: ${(node.parent.layoutMode === 'NONE' && !(node.id === figma.currentPage.selection[0].id)) ? 'absolute' : 'static'};
-    ${coord}
+    position: ${positionFromParent(node)};
   `;
     const alignItemsMap = {
         "MIN": 'start',
@@ -69,9 +74,10 @@ function displayProp(node) {
         "SPACE_BETWEEN": 'space-between'
     };
     if (node.layoutMode === 'VERTICAL') {
+        // position: ${["FRAME", "COMPONENT", "INSTANCE"].includes(node.type) ? 'relative' : 'static'}; /* dont get this... */
         return `
       display: flex;
-      position: ${["FRAME", "COMPONENT", "INSTANCE"].includes(node.type) ? 'relative' : 'static'};
+      position: relative;
       flex-direction: column;
       gap: ${node.itemSpacing}px;
       height: ${node.primaryAxisSizingMode === 'AUTO' ? 'auto' : node.height + 'px'};
@@ -92,6 +98,18 @@ function displayProp(node) {
       justify-content: ${justifyContentMap[node.primaryAxisAlignItems]};
     `;
     }
+}
+function boxShadow(node) {
+    if (!node.effects || node.effects.length === 0)
+        return '';
+    const shadows = node.effects.filter(effect => effect.type === 'DROP_SHADOW');
+    if (shadows.length === 0)
+        return '';
+    let css = 'box-shadow: ';
+    shadows.forEach(s => {
+        css += `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${s.spread}px ${rgbaColor(s.color, s.color.a)}`;
+    });
+    return css + ';';
 }
 /* css props helepers end */
 function nodeCSS(node) {
@@ -117,6 +135,7 @@ function nodeCSS(node) {
       opacity: ${node.opacity};
       ${paddingProp(node)}
       ${displayProp(node)}
+      ${boxShadow(node)}
       margin: 0;
     `;
     }
@@ -199,12 +218,14 @@ figma.parameters.on('input', ({ parameters, key, query, result }) => {
     }
 });
 figma.on('run', ({ command, parameters }) => {
+    var _a, _b, _c;
     console.log(command, parameters);
     figma.showUI(__html__);
     figma.ui.postMessage({
         css: createCSS(),
         html: createHTML(),
-        framework: parameters.framework
+        framework: parameters.framework,
+        name: (_c = (_b = (_a = figma.currentPage) === null || _a === void 0 ? void 0 : _a.selection) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.name
     });
 });
 // Make sure to close the plugin when you're done. Otherwise the plugin will
