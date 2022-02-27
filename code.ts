@@ -133,6 +133,7 @@ function fontStyle(node) {
     'extra light': 200,
     'light': 300,
     'normal': 400,
+    'regular': 400,
     'medium': 500,
     'semi bold': 600,
     'bold': 700,
@@ -155,7 +156,7 @@ function nodeCSS(node) {
       color: ${node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
-      text-align: ${node.textAlignHorizontal};
+      text-align: ${node.textAlignHorizontal?.toLowerCase()};
       ${fontStyle(node)}
       opacity: ${node.opacity};
       ${displayProp(node)}

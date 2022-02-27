@@ -119,6 +119,7 @@ function fontStyle(node) {
         'extra light': 200,
         'light': 300,
         'normal': 400,
+        'regular': 400,
         'medium': 500,
         'semi bold': 600,
         'bold': 700,
@@ -130,14 +131,14 @@ function fontStyle(node) {
 }
 /* css props helepers end */
 function nodeCSS(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
     console.log(node);
     if (node.type === 'TEXT') {
         return `
       color: ${((_b = (_a = node.fills) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.opacity) < 1 ? rgbaColor((_d = (_c = node.fills) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.color, (_f = (_e = node.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.opacity) : rgbToHex((_h = (_g = node.fills) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.color)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
-      text-align: ${node.textAlignHorizontal};
+      text-align: ${(_j = node.textAlignHorizontal) === null || _j === void 0 ? void 0 : _j.toLowerCase()};
       ${fontStyle(node)}
       opacity: ${node.opacity};
       ${displayProp(node)}
@@ -147,7 +148,7 @@ function nodeCSS(node) {
     else {
         return `
       box-sizing: border-box;
-      background-color: ${((_k = (_j = node.fills) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.opacity) < 1 ? rgbaColor((_m = (_l = node.fills) === null || _l === void 0 ? void 0 : _l[0]) === null || _m === void 0 ? void 0 : _m.color, (_p = (_o = node.fills) === null || _o === void 0 ? void 0 : _o[0]) === null || _p === void 0 ? void 0 : _p.opacity) : rgbToHex((_r = (_q = node.fills) === null || _q === void 0 ? void 0 : _q[0]) === null || _r === void 0 ? void 0 : _r.color)};
+      background-color: ${((_l = (_k = node.fills) === null || _k === void 0 ? void 0 : _k[0]) === null || _l === void 0 ? void 0 : _l.opacity) < 1 ? rgbaColor((_o = (_m = node.fills) === null || _m === void 0 ? void 0 : _m[0]) === null || _o === void 0 ? void 0 : _o.color, (_q = (_p = node.fills) === null || _p === void 0 ? void 0 : _p[0]) === null || _q === void 0 ? void 0 : _q.opacity) : rgbToHex((_s = (_r = node.fills) === null || _r === void 0 ? void 0 : _r[0]) === null || _s === void 0 ? void 0 : _s.color)};
       border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};
       ${borderProp(node)}
       opacity: ${node.opacity};
