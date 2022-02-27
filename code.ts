@@ -124,6 +124,27 @@ function boxShadow(node) {
   });
   return css +  ';';
 }
+
+function fontStyle(node) {
+  const isItalic = node.fontName?.style?.toLowerCase().includes('italic');
+
+  const weightMap = {
+    'thin': 100,
+    'extra light': 200,
+    'light': 300,
+    'normal': 400,
+    'medium': 500,
+    'semi bold': 600,
+    'bold': 700,
+    'extra bold': 800,
+    'black': 900
+  }
+
+  const weight = node.fontName?.style?.toLowerCase().replace('italic', '').trim();
+
+  return `font-weight: ${weightMap[weight]}; ${isItalic ? 'font-style: italic;' : ''}`;
+}
+
 /* css props helepers end */
 
 function nodeCSS(node) {
@@ -134,7 +155,8 @@ function nodeCSS(node) {
       color: ${node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
-      font-weight: ${node.fontName.style};
+      text-align: ${node.textAlignHorizontal};
+      ${fontStyle(node)}
       opacity: ${node.opacity};
       ${displayProp(node)}
       margin: 0;
@@ -143,7 +165,7 @@ function nodeCSS(node) {
     return `
       box-sizing: border-box;
       background-color: ${node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color)};
-      border-radius: ${node.cornerRadius}px;
+      border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};
       ${borderProp(node)}
       opacity: ${node.opacity};
       ${paddingProp(node)}
@@ -192,6 +214,7 @@ function createCSS() {
 
   function theChildren(children) {
     children.forEach( frame => {
+      if (frame.type === 'VECTOR') return;
       css += `.${componentName}__${checkIfClassExists(makeSafeForCSS(frame.name))} {${nodeCSS(frame)}}\n`;
       if (frame.children?.length > 0) {
         theChildren(frame.children);
@@ -200,6 +223,16 @@ function createCSS() {
   }
 
   return css;
+}
+
+function createSVG(frame) {
+  const paths = frame.vectorPaths?.map(p => {
+    return `<path d="${p.data}"  />`
+  });
+
+  return `<svg width="${frame.width}" height="${frame.height}" stroke-width="${frame.strokeWeight}" stroke="${rgbToHex(frame.strokes?.[0]?.color)}" fill="${frame.fills?.length === 0 ? 'none' : rgbToHex(frame.fills?.[0]?.color)}">
+    ${paths.join('')}
+  </svg>`;
 }
 
 function createHTML() {
@@ -221,12 +254,20 @@ function createHTML() {
 
   function theChildren(children) {
     return children.map( (frame) => {
+      if (frame.type === 'VECTOR') {
+        return createSVG(frame);
+      };
       i++;
       return `<div class="${componentName}__${subClasses[i - 1]}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
     }).join('');
   }
 
-  html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+  if (frame.type === 'VECTOR') {
+    // Is a Vector able to have children?
+    html = createSVG(frame);
+  } else {
+    html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+  }
 
   return html;
 }
@@ -245,7 +286,7 @@ figma.parameters.on('input', ({ parameters, key, query, result }: ParameterInput
 
 figma.on('run', ({ command, parameters }: RunEvent) => {
   console.log(command, parameters);
-  figma.showUI(__html__);
+  figma.showUI(__html__, {height: 800, width: 600});
   figma.ui.postMessage({
     css: createCSS(),
     html: createHTML(),

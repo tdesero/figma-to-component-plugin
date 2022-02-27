@@ -111,6 +111,23 @@ function boxShadow(node) {
     });
     return css + ';';
 }
+function fontStyle(node) {
+    var _a, _b, _c, _d;
+    const isItalic = (_b = (_a = node.fontName) === null || _a === void 0 ? void 0 : _a.style) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes('italic');
+    const weightMap = {
+        'thin': 100,
+        'extra light': 200,
+        'light': 300,
+        'normal': 400,
+        'medium': 500,
+        'semi bold': 600,
+        'bold': 700,
+        'extra bold': 800,
+        'black': 900
+    };
+    const weight = (_d = (_c = node.fontName) === null || _c === void 0 ? void 0 : _c.style) === null || _d === void 0 ? void 0 : _d.toLowerCase().replace('italic', '').trim();
+    return `font-weight: ${weightMap[weight]}; ${isItalic ? 'font-style: italic;' : ''}`;
+}
 /* css props helepers end */
 function nodeCSS(node) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
@@ -120,7 +137,8 @@ function nodeCSS(node) {
       color: ${((_b = (_a = node.fills) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.opacity) < 1 ? rgbaColor((_d = (_c = node.fills) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.color, (_f = (_e = node.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.opacity) : rgbToHex((_h = (_g = node.fills) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.color)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
-      font-weight: ${node.fontName.style};
+      text-align: ${node.textAlignHorizontal};
+      ${fontStyle(node)}
       opacity: ${node.opacity};
       ${displayProp(node)}
       margin: 0;
@@ -130,7 +148,7 @@ function nodeCSS(node) {
         return `
       box-sizing: border-box;
       background-color: ${((_k = (_j = node.fills) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.opacity) < 1 ? rgbaColor((_m = (_l = node.fills) === null || _l === void 0 ? void 0 : _l[0]) === null || _m === void 0 ? void 0 : _m.color, (_p = (_o = node.fills) === null || _o === void 0 ? void 0 : _o[0]) === null || _p === void 0 ? void 0 : _p.opacity) : rgbToHex((_r = (_q = node.fills) === null || _q === void 0 ? void 0 : _q[0]) === null || _r === void 0 ? void 0 : _r.color)};
-      border-radius: ${node.cornerRadius}px;
+      border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};
       ${borderProp(node)}
       opacity: ${node.opacity};
       ${paddingProp(node)}
@@ -174,6 +192,8 @@ function createCSS() {
     function theChildren(children) {
         children.forEach(frame => {
             var _a;
+            if (frame.type === 'VECTOR')
+                return;
             css += `.${componentName}__${checkIfClassExists(makeSafeForCSS(frame.name))} {${nodeCSS(frame)}}\n`;
             if (((_a = frame.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
                 theChildren(frame.children);
@@ -181,6 +201,15 @@ function createCSS() {
         });
     }
     return css;
+}
+function createSVG(frame) {
+    var _a, _b, _c, _d, _e, _f;
+    const paths = (_a = frame.vectorPaths) === null || _a === void 0 ? void 0 : _a.map(p => {
+        return `<path d="${p.data}"  />`;
+    });
+    return `<svg width="${frame.width}" height="${frame.height}" stroke-width="${frame.strokeWeight}" stroke="${rgbToHex((_c = (_b = frame.strokes) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.color)}" fill="${((_d = frame.fills) === null || _d === void 0 ? void 0 : _d.length) === 0 ? 'none' : rgbToHex((_f = (_e = frame.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.color)}">
+    ${paths.join('')}
+  </svg>`;
 }
 function createHTML() {
     let html = '';
@@ -200,11 +229,21 @@ function createHTML() {
     }
     function theChildren(children) {
         return children.map((frame) => {
+            if (frame.type === 'VECTOR') {
+                return createSVG(frame);
+            }
+            ;
             i++;
             return `<div class="${componentName}__${subClasses[i - 1]}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
         }).join('');
     }
-    html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+    if (frame.type === 'VECTOR') {
+        // Is a Vector able to have children?
+        html = createSVG(frame);
+    }
+    else {
+        html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+    }
     return html;
 }
 figma.parameters.on('input', ({ parameters, key, query, result }) => {
@@ -220,7 +259,7 @@ figma.parameters.on('input', ({ parameters, key, query, result }) => {
 figma.on('run', ({ command, parameters }) => {
     var _a, _b, _c;
     console.log(command, parameters);
-    figma.showUI(__html__);
+    figma.showUI(__html__, { height: 800, width: 600 });
     figma.ui.postMessage({
         css: createCSS(),
         html: createHTML(),
