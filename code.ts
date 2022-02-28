@@ -215,6 +215,7 @@ function createCSS() {
 
   function theChildren(children) {
     children.forEach( frame => {
+      if (!frame.visible) return;
       if (frame.type === 'VECTOR') return;
       css += `.${componentName}__${checkIfClassExists(makeSafeForCSS(frame.name))} {${nodeCSS(frame)}}\n`;
       if (frame.children?.length > 0) {
@@ -226,6 +227,10 @@ function createCSS() {
   return css;
 }
 
+function allChildrenAreVector(frame) {
+  return (frame.children?.length > 0) && (frame.children?.filter(n => n.type === 'VECTOR').length === frame.children?.length);
+}
+
 function createSVG(frame) {
   const paths = frame.vectorPaths?.map(p => {
     return `<path d="${p.data}"  />`
@@ -233,6 +238,28 @@ function createSVG(frame) {
 
   return `<svg width="${frame.width}" height="${frame.height}" stroke-width="${frame.strokeWeight}" stroke="${rgbToHex(frame.strokes?.[0]?.color)}" fill="${frame.fills?.length === 0 ? 'none' : rgbToHex(frame.fills?.[0]?.color)}">
     ${paths.join('')}
+  </svg>`;
+}
+
+function createSVGOfChildren(frame, className) {
+  const paths = frame.children?.map(n => {
+    return n.vectorPaths?.map(p => {
+      return `<path 
+        d="${p.data}"
+        stroke="${rgbToHex(n.strokes?.[0]?.color)}"
+        stroke-width="${n.strokeWeight}"  
+        fill="${n.fills?.length === 0 ? 'none' : rgbToHex(n.fills?.[0]?.color)}" 
+        transform="translate(${n.x} ${n.y})"
+      />`
+    }).join('');
+  });
+
+  return `<svg 
+    class="${className}"
+    width="${frame.width}" 
+    height="${frame.height}" 
+    viewBox="0 0 ${frame.width} ${frame.height}">
+      ${paths.join('')}
   </svg>`;
 }
 
@@ -255,19 +282,28 @@ function createHTML() {
 
   function theChildren(children) {
     return children.map( (frame) => {
+      if (!frame.visible) return;
+
       if (frame.type === 'VECTOR') {
         return createSVG(frame);
-      };
+      }
+
       i++;
+      if (allChildrenAreVector(frame)){
+        return createSVGOfChildren(frame, `${componentName}__${subClasses[i - 1]}`);
+      }
       return `<div class="${componentName}__${subClasses[i - 1]}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
     }).join('');
   }
 
+  // why isn't this just "childrenEl" ???
   if (frame.type === 'VECTOR') {
     // Is a Vector able to have children?
     html = createSVG(frame);
+  } else if (allChildrenAreVector(frame)){
+    html = createSVGOfChildren(frame, componentName);
   } else {
-    html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+    html += `<div class="${componentName}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
   }
 
   return html;

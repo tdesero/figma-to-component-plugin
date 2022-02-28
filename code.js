@@ -193,6 +193,8 @@ function createCSS() {
     function theChildren(children) {
         children.forEach(frame => {
             var _a;
+            if (!frame.visible)
+                return;
             if (frame.type === 'VECTOR')
                 return;
             css += `.${componentName}__${checkIfClassExists(makeSafeForCSS(frame.name))} {${nodeCSS(frame)}}\n`;
@@ -203,6 +205,10 @@ function createCSS() {
     }
     return css;
 }
+function allChildrenAreVector(frame) {
+    var _a, _b, _c;
+    return (((_a = frame.children) === null || _a === void 0 ? void 0 : _a.length) > 0) && (((_b = frame.children) === null || _b === void 0 ? void 0 : _b.filter(n => n.type === 'VECTOR').length) === ((_c = frame.children) === null || _c === void 0 ? void 0 : _c.length));
+}
 function createSVG(frame) {
     var _a, _b, _c, _d, _e, _f;
     const paths = (_a = frame.vectorPaths) === null || _a === void 0 ? void 0 : _a.map(p => {
@@ -210,6 +216,29 @@ function createSVG(frame) {
     });
     return `<svg width="${frame.width}" height="${frame.height}" stroke-width="${frame.strokeWeight}" stroke="${rgbToHex((_c = (_b = frame.strokes) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.color)}" fill="${((_d = frame.fills) === null || _d === void 0 ? void 0 : _d.length) === 0 ? 'none' : rgbToHex((_f = (_e = frame.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.color)}">
     ${paths.join('')}
+  </svg>`;
+}
+function createSVGOfChildren(frame, className) {
+    var _a;
+    const paths = (_a = frame.children) === null || _a === void 0 ? void 0 : _a.map(n => {
+        var _a;
+        return (_a = n.vectorPaths) === null || _a === void 0 ? void 0 : _a.map(p => {
+            var _a, _b, _c, _d, _e;
+            return `<path 
+        d="${p.data}"
+        stroke="${rgbToHex((_b = (_a = n.strokes) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.color)}"
+        stroke-width="${n.strokeWeight}"  
+        fill="${((_c = n.fills) === null || _c === void 0 ? void 0 : _c.length) === 0 ? 'none' : rgbToHex((_e = (_d = n.fills) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.color)}" 
+        transform="translate(${n.x} ${n.y})"
+      />`;
+        }).join('');
+    });
+    return `<svg 
+    class="${className}"
+    width="${frame.width}" 
+    height="${frame.height}" 
+    viewBox="0 0 ${frame.width} ${frame.height}">
+      ${paths.join('')}
   </svg>`;
 }
 function createHTML() {
@@ -230,20 +259,28 @@ function createHTML() {
     }
     function theChildren(children) {
         return children.map((frame) => {
+            if (!frame.visible)
+                return;
             if (frame.type === 'VECTOR') {
                 return createSVG(frame);
             }
-            ;
             i++;
+            if (allChildrenAreVector(frame)) {
+                return createSVGOfChildren(frame, `${componentName}__${subClasses[i - 1]}`);
+            }
             return `<div class="${componentName}__${subClasses[i - 1]}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
         }).join('');
     }
+    // why isn't this just "childrenEl" ???
     if (frame.type === 'VECTOR') {
         // Is a Vector able to have children?
         html = createSVG(frame);
     }
+    else if (allChildrenAreVector(frame)) {
+        html = createSVGOfChildren(frame, componentName);
+    }
     else {
-        html += `<div class="${componentName}">\n${childrenEl(frame)}\n</div>`;
+        html += `<div class="${componentName}">\n${frame.characters ? frame.characters : ''} ${childrenEl(frame)}\n</div>`;
     }
     return html;
 }
