@@ -38,18 +38,22 @@ function makeSafeForCSS(name) {
 /* helpers end */
 /* css props helpers */
 function borderProp(node) {
+    var _a;
     if (!node.strokes || !node.strokeWeight || node.strokes.length < 1)
         return '';
-    return `border: ${node.strokeWeight}px solid ${node.strokes[0].opacity < 1 ? rgbaColor(node.strokes[0].color, node.strokes[0].opacity) : rgbToHex(node.strokes[0].color)};`;
+    return `${node.strokeStyleId && '/*' + ((_a = figma.getStyleById(node.strokeStyleId)) === null || _a === void 0 ? void 0 : _a.name) + '*/'} border: ${node.strokeWeight}px solid ${node.strokes[0].opacity < 1 ? rgbaColor(node.strokes[0].color, node.strokes[0].opacity) : rgbToHex(node.strokes[0].color)};`;
 }
 function paddingProp(node) {
-    if (!node.paddingTop)
+    if (!node.paddingTop && !node.paddingRight && !node.paddingBottom && !node.paddingLeft)
         return '';
     return `padding: ${node.paddingTop}px ${node.paddingRight}px ${node.paddingBottom}px ${node.paddingLeft}px;`;
 }
 function displayProp(node) {
     const coord = node.id === figma.currentPage.selection[0].id ? '' : `left: ${node.x}px; top: ${node.y}px;`;
     const positionFromParent = (node) => {
+        if (node.type === 'GROUP') {
+            return 'static';
+        }
         if (node.id === figma.currentPage.selection[0].id) {
             return 'relative';
         }
@@ -100,6 +104,7 @@ function displayProp(node) {
     }
 }
 function boxShadow(node) {
+    var _a;
     if (!node.effects || node.effects.length === 0)
         return '';
     const shadows = node.effects.filter(effect => effect.type === 'DROP_SHADOW');
@@ -109,7 +114,7 @@ function boxShadow(node) {
     shadows.forEach(s => {
         css += `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${s.spread}px ${rgbaColor(s.color, s.color.a)}`;
     });
-    return css + ';';
+    return `${node.effectStyleId && '/*' + ((_a = figma.getStyleById(node.effectStyleId)) === null || _a === void 0 ? void 0 : _a.name) + '*/'}` + css + ';';
 }
 function fontStyle(node) {
     var _a, _b, _c, _d;
@@ -117,45 +122,75 @@ function fontStyle(node) {
     const weightMap = {
         'thin': 100,
         'extra light': 200,
+        'extralight': 200,
         'light': 300,
         'normal': 400,
         'regular': 400,
         'medium': 500,
         'semi bold': 600,
+        'semibold': 600,
         'bold': 700,
         'extra bold': 800,
+        'extrabold': 800,
         'black': 900
     };
     const weight = (_d = (_c = node.fontName) === null || _c === void 0 ? void 0 : _c.style) === null || _d === void 0 ? void 0 : _d.toLowerCase().replace('italic', '').trim();
     return `font-weight: ${weightMap[weight]}; ${isItalic ? 'font-style: italic;' : ''}`;
 }
+function fillColor(node) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    return ((_b = (_a = node.fills) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.opacity) < 1 ? rgbaColor((_d = (_c = node.fills) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.color, (_f = (_e = node.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.opacity) : rgbToHex((_h = (_g = node.fills) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.color);
+}
+function transforms(node) {
+    if (node.rotation && node.type !== 'GROUP') {
+        return `
+      transform-origin: 0 0;
+      transform: rotate(${node.rotation * -1}deg);
+    `;
+    }
+    else {
+        return '';
+    }
+}
+function borderRadius(node) {
+    if (node.type === 'ELLIPSE')
+        return 'border-radius: 50%;';
+    return `border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};`;
+}
 /* css props helepers end */
 function nodeCSS(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+    var _a, _b, _c;
     console.log(node);
     if (node.type === 'TEXT') {
         return `
-      color: ${((_b = (_a = node.fills) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.opacity) < 1 ? rgbaColor((_d = (_c = node.fills) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.color, (_f = (_e = node.fills) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.opacity) : rgbToHex((_h = (_g = node.fills) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.color)};
+      ${node.fillStyleId && '/*' + ((_a = figma.getStyleById(node.fillStyleId)) === null || _a === void 0 ? void 0 : _a.name) + '*/'}
+      color: ${fillColor(node)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
-      text-align: ${(_j = node.textAlignHorizontal) === null || _j === void 0 ? void 0 : _j.toLowerCase()};
+      text-align: ${(_b = node.textAlignHorizontal) === null || _b === void 0 ? void 0 : _b.toLowerCase()};
       ${fontStyle(node)}
       opacity: ${node.opacity};
       ${displayProp(node)}
       margin: 0;
+      ${transforms(node)}
     `;
     }
     else {
         return `
       box-sizing: border-box;
-      background-color: ${((_l = (_k = node.fills) === null || _k === void 0 ? void 0 : _k[0]) === null || _l === void 0 ? void 0 : _l.opacity) < 1 ? rgbaColor((_o = (_m = node.fills) === null || _m === void 0 ? void 0 : _m[0]) === null || _o === void 0 ? void 0 : _o.color, (_q = (_p = node.fills) === null || _p === void 0 ? void 0 : _p[0]) === null || _q === void 0 ? void 0 : _q.opacity) : rgbToHex((_s = (_r = node.fills) === null || _r === void 0 ? void 0 : _r[0]) === null || _s === void 0 ? void 0 : _s.color)};
-      border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};
+      ${node.fillStyleId && '/*' + ((_c = figma.getStyleById(node.fillStyleId)) === null || _c === void 0 ? void 0 : _c.name) + '*/'}
+      background-color: ${fillColor(node)};
+      ${borderRadius(node)}
       ${borderProp(node)}
       opacity: ${node.opacity};
       ${paddingProp(node)}
       ${displayProp(node)}
       ${boxShadow(node)}
       margin: 0;
+      ${node.layoutGrow ? 'flex-grow: 1; flex-shrink: 1;' : ''}
+      ${node.layoutAlign === 'STRETCH' ? 'align-self: stretch;' : ''}
+      ${transforms(node)}
+      ${node.clipsContent ? 'overflow: hidden;' : ''}
     `;
     }
 }

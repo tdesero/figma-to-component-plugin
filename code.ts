@@ -46,11 +46,11 @@ function makeSafeForCSS(name) {
 function borderProp(node) {
   if (!node.strokes || !node.strokeWeight || node.strokes.length < 1) return '';
 
-  return `border: ${node.strokeWeight}px solid ${node.strokes[0].opacity < 1 ? rgbaColor(node.strokes[0].color, node.strokes[0].opacity) : rgbToHex(node.strokes[0].color)};`
+  return `${node.strokeStyleId && '/*' + figma.getStyleById(node.strokeStyleId)?.name + '*/'} border: ${node.strokeWeight}px solid ${node.strokes[0].opacity < 1 ? rgbaColor(node.strokes[0].color, node.strokes[0].opacity) : rgbToHex(node.strokes[0].color)};`
 }
 
 function paddingProp(node) {
-  if (!node.paddingTop) return '';
+  if (!node.paddingTop && !node.paddingRight && !node.paddingBottom && !node.paddingLeft) return '';
 
   return `padding: ${node.paddingTop}px ${node.paddingRight}px ${node.paddingBottom}px ${node.paddingLeft}px;`
 }
@@ -59,6 +59,9 @@ function displayProp(node) {
   const coord = node.id === figma.currentPage.selection[0].id ? '' : `left: ${node.x}px; top: ${node.y}px;`;
 
   const positionFromParent = (node) => {
+    if ( node.type === 'GROUP') {
+      return 'static';
+    }
     if ( node.id === figma.currentPage.selection[0].id ) {
       return 'relative';
     }
@@ -122,7 +125,7 @@ function boxShadow(node) {
   shadows.forEach(s => {
     css += `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${s.spread}px ${rgbaColor(s.color, s.color.a)}`
   });
-  return css +  ';';
+  return `${node.effectStyleId && '/*' + figma.getStyleById(node.effectStyleId)?.name + '*/'}` +  css +  ';';
 }
 
 function fontStyle(node) {
@@ -131,19 +134,42 @@ function fontStyle(node) {
   const weightMap = {
     'thin': 100,
     'extra light': 200,
+    'extralight': 200,
     'light': 300,
     'normal': 400,
     'regular': 400,
     'medium': 500,
     'semi bold': 600,
+    'semibold': 600,
     'bold': 700,
     'extra bold': 800,
+    'extrabold': 800,
     'black': 900
   }
 
   const weight = node.fontName?.style?.toLowerCase().replace('italic', '').trim();
 
   return `font-weight: ${weightMap[weight]}; ${isItalic ? 'font-style: italic;' : ''}`;
+}
+
+function fillColor(node) {
+   return node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color);
+}
+
+function transforms(node) {
+  if (node.rotation && node.type !== 'GROUP') {
+    return `
+      transform-origin: 0 0;
+      transform: rotate(${node.rotation * -1}deg);
+    `;
+  } else {
+    return '';
+  }
+}
+
+function borderRadius(node) {
+  if (node.type === 'ELLIPSE') return 'border-radius: 50%;';
+  return `border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};`
 }
 
 /* css props helepers end */
@@ -153,7 +179,8 @@ function nodeCSS(node) {
 
   if (node.type === 'TEXT') {
     return `
-      color: ${node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color)};
+      ${node.fillStyleId && '/*' + figma.getStyleById(node.fillStyleId)?.name + '*/'}
+      color: ${fillColor(node)};
       font-size: ${node.fontSize}px;
       font-family: ${node.fontName.family};
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
@@ -161,18 +188,24 @@ function nodeCSS(node) {
       opacity: ${node.opacity};
       ${displayProp(node)}
       margin: 0;
+      ${transforms(node)}
     `
   } else {
     return `
       box-sizing: border-box;
-      background-color: ${node.fills?.[0]?.opacity < 1 ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity) : rgbToHex(node.fills?.[0]?.color)};
-      border-radius: ${(typeof node.cornerRadius === "number") ? (node.cornerRadius + 'px') : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`};
+      ${node.fillStyleId && '/*' + figma.getStyleById(node.fillStyleId)?.name + '*/'}
+      background-color: ${fillColor(node)};
+      ${borderRadius(node)}
       ${borderProp(node)}
       opacity: ${node.opacity};
       ${paddingProp(node)}
       ${displayProp(node)}
       ${boxShadow(node)}
       margin: 0;
+      ${node.layoutGrow ? 'flex-grow: 1; flex-shrink: 1;' : ''}
+      ${node.layoutAlign === 'STRETCH' ? 'align-self: stretch;' : ''}
+      ${transforms(node)}
+      ${node.clipsContent ? 'overflow: hidden;' : ''}
     `
   }
   
