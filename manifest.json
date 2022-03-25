@@ -2,11 +2,11 @@
   "name": "Figma to HTML/CSS",
   "id": "1077172952654000760",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "dist/code.js",
   "editorType": [
     "figma"
   ],
-  "ui": "ui.html",
+  "ui": "dist/ui.html",
   "parameters": [
     {
       "name": "Framework",
