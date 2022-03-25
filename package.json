@@ -4,8 +4,8 @@
   "description": "Your Figma plugin",
   "main": "code.js",
   "scripts": {
-    "build": "tsc.cmd -p tsconfig.json",
-    "watch": "tsc.cmd -p tsconfig.json --watch"
+    "build": "npx webpack --mode=production",
+    "watch": "npx webpack --mode=development --watch"
   },
   "author": "",
   "license": "",

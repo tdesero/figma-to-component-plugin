@@ -1,0 +1,111 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify-css.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify-html.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/vs2015.min.css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script><div id="preview"></div><button id="copy">Copy <span id="framework"></span> Code</button><pre><code class="hljs" id="code"></code></pre><script>/* helpers */
+  function toPascalCase(string) {
+    return `${string}`
+      .replace(new RegExp(/[-_]+/, "g"), " ")
+      .replace(new RegExp(/[^\w\s]/, "g"), "")
+      .replace(
+        new RegExp(/\s+(.)(\w*)/, "g"),
+        ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+      )
+      .replace(new RegExp(/\w/), (s) => s.toUpperCase());
+  }
+  /* helpers end */
+
+  onmessage = (event) => {
+    const framework = event.data.pluginMessage.framework;
+
+    const html = html_beautify(event.data.pluginMessage.html, {
+      indent_size: "2",
+      indent_char: " ",
+      max_preserve_newlines: "5",
+      preserve_newlines: true,
+      keep_array_indentation: false,
+      break_chained_methods: false,
+      indent_scripts: "normal",
+      brace_style: "collapse",
+      space_before_conditional: true,
+      unescape_strings: false,
+      jslint_happy: false,
+      end_with_newline: false,
+      wrap_line_length: "0",
+      indent_inner_html: false,
+      comma_first: false,
+      e4x: false,
+      indent_empty_lines: false,
+    });
+    const css = css_beautify(event.data.pluginMessage.css, {
+      indent_size: "2",
+      indent_char: " ",
+      max_preserve_newlines: "-1",
+      preserve_newlines: false,
+      keep_array_indentation: false,
+      break_chained_methods: false,
+      indent_scripts: "normal",
+      brace_style: "collapse",
+      space_before_conditional: true,
+      unescape_strings: false,
+      jslint_happy: false,
+      end_with_newline: false,
+      wrap_line_length: "0",
+      indent_inner_html: false,
+      comma_first: false,
+      e4x: false,
+      indent_empty_lines: false,
+    });
+
+    const name = toPascalCase(event.data.pluginMessage.name);
+
+    const highlightedHtml = hljs.highlight(html, { language: "xml" }).value;
+    const highlightedCss = hljs.highlight(css, { language: "css" }).value;
+
+    document.querySelector("#framework").innerText = framework;
+
+    document.querySelector("#preview").innerHTML =
+      html + "<style>" + css + "</style>";
+
+    switch (framework) {
+      case "react":
+        document.querySelector("#code").innerText =
+          "export const " +
+          name +
+          " = () => { \nreturn(\n" +
+          html.replace(/class=/g, "className=") +
+          ")}\n\n" +
+          css;
+        break;
+      case "html":
+        document.querySelector("#code").innerHTML =
+          highlightedHtml +
+          "\n\n" +
+          "&lt;style&gt;\n" +
+          highlightedCss +
+          "\n&lt;/style&gt;";
+        break;
+      default:
+        return;
+    }
+
+    const copyToClipboard = (str) => {
+      const el = document.createElement("textarea");
+      el.value = str;
+      el.setAttribute("readonly", "");
+      el.style.position = "absolute";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      const selected =
+        document.getSelection().rangeCount > 0
+          ? document.getSelection().getRangeAt(0)
+          : false;
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      if (selected) {
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(selected);
+      }
+    };
+
+    document.querySelector("#copy").onclick = copyToClipboard(
+      document.querySelector("#code").innerText
+    );
+  };</script>

@@ -130,7 +130,7 @@ export function position(node) {
   const coord =
     node.id === figma.currentPage.selection[0].id
       ? ""
-      : `left: ${node.x}px; top: ${node.y}px;`;
+      : `left: ${node.x}px; top: ${node.y}px`;
 
   const positionFromParent = (node) => {
     if (node.type === "GROUP") {
