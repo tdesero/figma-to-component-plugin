@@ -11,33 +11,38 @@ import {
   position,
   overflow,
   opacity,
+  lineHeight,
 } from "./helpers/propsHelpers";
 
-import { makeSafeForCSS, rgbToHex } from "./helpers/helpers";
+import {
+  makeSafeForCSS,
+  colorAsHexOrRgba,
+  svgDataToFixed,
+  getTransforms,
+} from "./helpers/helpers";
+import { getStyles } from "./getStyles";
 
 function nodeCSS(node) {
   console.log(node);
 
-  if (node.type === "TEXT") {
+  if (node.type?.toString() === "TEXT") {
     return `
       color: ${fillColor(node)};
-      font-size: ${node.fontSize}px;
-      font-family: ${node.fontName.family};
+      font-size: ${node.fontSize?.toString()}px;
+      font-family: ${node.fontName.family?.toString()};
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
+      ${lineHeight(node)}
       ${fontStyle(node)}
       ${opacity(node)}
       ${position(node)}
       ${displayProp(node)}
+      ${dimensions(node)}
       margin: 0;
       ${transforms(node)}
     `;
   } else {
     return `
       box-sizing: border-box;
-      ${
-        node.fillStyleId &&
-        "/*" + figma.getStyleById(node.fillStyleId)?.name + "*/"
-      }
       background: ${fillColor(node)};
       ${borderRadius(node)}
       ${borderProp(node)}
@@ -96,7 +101,7 @@ function createTree(selection) {
     children.forEach((node, i) => {
       if (!node.visible) return;
 
-      treeChildren.push({
+      const newElement = {
         name: `${componentName}__${uniqueName(makeSafeForCSS(node.name))}`,
         css: nodeCSS(node),
         allChildrenAreVector: allChildrenAreVector(node),
@@ -104,10 +109,12 @@ function createTree(selection) {
         type: node.type,
         characters: node.characters,
         originalNode: node,
-      });
+      };
+
+      treeChildren?.push(newElement);
 
       if (node.children?.length > 0) {
-        theChildren(node.children, treeChildren[i]?.children);
+        theChildren(node.children, newElement.children);
       }
     });
   }
@@ -128,12 +135,17 @@ function printCSS(tree) {
   function theChildren(children) {
     children.forEach((treeElement) => {
       css += `.${treeElement.name} {${treeElement.css}}\n`;
+      if (treeElement.allChildrenAreVector) {
+        return;
+      }
       if (treeElement.children.length > 0) {
         theChildren(treeElement.children);
       }
     });
   }
-  theChildren(tree.children);
+  if (!tree.allChildrenAreVector) {
+    theChildren(tree.children);
+  }
 
   return css;
 }
@@ -141,38 +153,42 @@ function printCSS(tree) {
 function printHTML(tree) {
   let html = "";
 
-  function childrenEl(frame) {
-    if (frame.children?.length > 0) {
-      return theChildren(frame.children);
+  function childrenEl(treeElement) {
+    if (treeElement.children?.length > 0) {
+      return theChildren(treeElement.children);
     } else {
       return "";
     }
   }
   function theChildren(children) {
     return children
-      .map((node) => {
-        if (node.type === "VECTOR") {
-          return createSVG(node.originalNode);
+      .map((treeElement) => {
+        if (treeElement.type === "VECTOR") {
+          return createSVG(treeElement.originalNode, treeElement.name);
         }
-        if (node.allChildrenAreVector) {
-          return createSVGOfChildren(node.originalNode, `${node.name}`);
+        if (treeElement.allChildrenAreVector) {
+          return createSVGOfChildren(
+            treeElement.originalNode,
+            treeElement.name
+          );
         }
-        return `<div class="${node.name}">\n${
-          node.characters ? node.characters : ""
-        } ${childrenEl(node)}\n</div>`;
+        return `<div class="${treeElement.name}">\n${
+          treeElement.characters
+            ? treeElement.characters.replaceAll("\n", "<br />")
+            : ""
+        } ${childrenEl(treeElement)}\n</div>`;
       })
       .join("");
   }
 
   // why isn't this just "childrenEl" ???
   if (tree.type === "VECTOR") {
-    // Is a Vector able to have children?
-    html = createSVG(tree.originalNode);
+    html = createSVG(tree.originalNode, tree.name);
   } else if (tree.allChildrenAreVector) {
     html = createSVGOfChildren(tree.originalNode, tree.name);
   } else {
     html += `<div class="${tree.name}">\n${
-      tree.characters ? tree.characters : ""
+      tree.characters ? tree.characters.replaceAll("\n", "<br />") : ""
     } ${childrenEl(tree)}\n</div>`;
   }
 
@@ -187,39 +203,51 @@ function allChildrenAreVector(frame) {
   );
 }
 
-function createSVG(frame) {
-  const paths = frame.vectorPaths?.map((p) => {
-    return `<path d="${p.data}" />`;
+function createSVG(node, className) {
+  const paths = node.vectorPaths?.map((p) => {
+    return `<path d="${svgDataToFixed(p.data, 3)}" fill-rule="${p.windingRule
+      .toString()
+      .toLowerCase()}" />`;
   });
 
   return `<svg 
-  width="${frame.width}" 
-  height="${frame.height}" 
-  stroke-width="${frame.strokeWeight}" 
-  stroke="${rgbToHex(frame.strokes?.[0]?.color)}" 
+  class="${className}"
+  width="${node.width}" 
+  height="${node.height}" 
+  stroke-width="${node.strokeWeight}" 
+  stroke="${colorAsHexOrRgba(node.strokes?.[0])}" 
+  stroke-linecap="${node.strokeCap.toString().toLowerCase()}"
   fill="${
-    frame.fills?.length === 0 ? "none" : rgbToHex(frame.fills?.[0]?.color)
-  }" 
-  transform="translate(${frame.x} ${frame.y}) rotate(${
-    frame.rotation * -1
-  }, 0, 0)"
+    node.fills?.length === 0 ? "none" : colorAsHexOrRgba(node.fills?.[0])
+  }"
+  transform-origin="0 0"
+  transform="scale(${getTransforms(node.absoluteTransform).scaleX} ${
+    getTransforms(node.absoluteTransform).scaleY
+  })" 
   >
     ${paths.join("")}
   </svg>`;
 }
 
-function createSVGOfChildren(frame, className) {
-  const paths = frame.children?.map((n) => {
+function createSVGOfChildren(node, className) {
+  const paths = node.children?.map((n) => {
     return n.vectorPaths
       ?.map((p) => {
         return `<path 
-        d="${p.data}"
-        stroke="${rgbToHex(n.strokes?.[0]?.color)}"
+        d="${svgDataToFixed(p.data, 3)}"
+        fill-rule="${p.windingRule.toString().toLowerCase()}"
+        stroke="${colorAsHexOrRgba(n.strokes?.[0])}"
         stroke-width="${n.strokeWeight}"  
+        stroke-linecap="${n.strokeCap.toString().toLowerCase()}"
         fill="${
-          n.fills?.length === 0 ? "none" : rgbToHex(n.fills?.[0]?.color)
+          n.fills?.length === 0 ? "none" : colorAsHexOrRgba(n.fills?.[0])
         }" 
-        transform="translate(${n.x} ${n.y}) rotate(${n.rotation * -1}, 0, 0)" 
+        transform-origin="0 0"
+        transform="translate(${n.x} ${n.y}) rotate(${
+          n.rotation * -1
+        }, 0, 0) scale(${getTransforms(n.absoluteTransform).scaleX} ${
+          getTransforms(n.absoluteTransform).scaleY
+        })"
       />`;
       })
       .join("");
@@ -227,9 +255,13 @@ function createSVGOfChildren(frame, className) {
 
   return `<svg 
     class="${className}"
-    width="${frame.width}" 
-    height="${frame.height}" 
-    viewBox="0 0 ${frame.width} ${frame.height}"
+    width="${node.width}" 
+    height="${node.height}" 
+    viewBox="0 0 ${node.width} ${node.height}"
+    transform-origin="0 0"
+    transform="scale(${getTransforms(node.absoluteTransform).scaleX} ${
+    getTransforms(node.absoluteTransform).scaleY
+  })" 
     >
       ${paths.join("")}
   </svg>`;
@@ -243,6 +275,10 @@ figma.parameters.on(
         const frameworks = ["react", "html"];
         result.setSuggestions(frameworks.filter((s) => s.includes(query)));
         break;
+      case "withStyles":
+        const answers = ["All Styles"];
+        result.setSuggestions(answers.filter((s) => s.includes(query)));
+        break;
       default:
         return;
     }
@@ -251,11 +287,12 @@ figma.parameters.on(
 
 figma.on("run", ({ command, parameters }: RunEvent) => {
   console.log(command, parameters);
-  figma.showUI(__html__, { height: 800, width: 600 });
+  figma.showUI(__html__, { height: 500, width: 400 });
   figma.ui.postMessage({
     css: printCSS(tree),
     html: printHTML(tree),
     framework: parameters.framework,
+    styles: parameters.withStyles === "All Styles" ? getStyles(figma) : null,
     name: figma.currentPage?.selection?.[0]?.name,
   });
 });

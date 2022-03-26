@@ -1,7 +1,14 @@
-import { rgbToHex, rgbaColor, getTransforms } from "./helpers";
+import {
+  rgbToHex,
+  rgbaColor,
+  getTransforms,
+  makeSafeForCSS,
+  cleanStyleName,
+} from "./helpers";
 
 /* css props helpers */
 export function borderProp(node) {
+  if (node.type === "VECTOR") return "";
   if (!node.strokes || !node.strokeWeight || node.strokes.length < 1) return "";
 
   return `${
@@ -27,9 +34,8 @@ export function paddingProp(node) {
 }
 
 export function displayProp(node) {
-  const flexShrinkGrow = node.layoutGrow
-    ? "flex-grow: 1; flex-shrink: 1;"
-    : shrink();
+  const flexShrinkGrow =
+    node.layoutGrow === 1 ? "flex-grow: 1; flex-shrink: 1;" : shrink();
 
   function shrink() {
     return !(node.type === "TEXT") && !(node.primaryAxisSizingMode === "AUTO")
@@ -89,35 +95,57 @@ export function displayProp(node) {
 }
 
 export function dimensions(node) {
+  let height = "";
+  let width = "";
+
   if (node.layoutMode === "VERTICAL") {
-    return `
-        height: ${
-          node.primaryAxisSizingMode === "AUTO" ? "auto" : node.height + "px"
-        };
-        width: ${
-          node.counterAxisSizingMode === "AUTO" ? "auto" : node.width + "px"
-        };`;
+    height =
+      node.primaryAxisSizingMode === "AUTO" ? "auto" : node.height + "px";
+    width = node.counterAxisSizingMode === "AUTO" ? "auto" : node.width + "px";
   }
 
   if (node.layoutMode === "HORIZONTAL") {
-    return `
-        width: ${
-          node.primaryAxisSizingMode === "AUTO" ? "auto" : node.width + "px"
-        };
-        height: ${
-          node.counterAxisSizingMode === "AUTO" ? "auto" : node.height + "px"
-        };`;
+    width = node.primaryAxisSizingMode === "AUTO" ? "auto" : node.width + "px";
+    height =
+      node.counterAxisSizingMode === "AUTO" ? "auto" : node.height + "px";
   }
 
+  // default case
   if (!node.layoutMode || node.layoutMode === "NONE") {
-    return `
-      height: ${node.type === "TEXT" ? "auto" : node.height + "px"};
-      width: ${node.type === "TEXT" ? "auto" : node.width + "px"};
-    `;
+    height = node.textAutoResize?.toString().includes("HEIGHT")
+      ? "auto"
+      : node.height + "px";
+    width = node.textAutoResize?.toString().includes("WIDTH")
+      ? "auto"
+      : node.width + "px";
   }
+
+  if (
+    node.parent.layoutMode === "HORIZONTAL" &&
+    node.layoutAlign === "STRETCH"
+  ) {
+    height = "auto";
+  }
+
+  if (node.parent.layoutMode === "VERTICAL" && node.layoutAlign === "STRETCH") {
+    width = "auto";
+  }
+
+  if (node.parent.layoutMode === "HORIZONTAL" && node.layoutGrow === 1) {
+    width = "auto";
+  }
+
+  if (node.parent.layoutMode === "VERTICAL" && node.layoutGrow === 1) {
+    height = "auto";
+  }
+
+  return `width: ${width}; height: ${height};`;
 }
 
 export function overflow(node) {
+  if (node.type === "VECTOR" || node.type === "BOOLEAN_OPERATION")
+    return "overflow: visible;";
+
   return node.clipsContent ? "overflow: hidden;" : "";
 }
 
@@ -133,7 +161,7 @@ export function position(node) {
       : `left: ${node.x}px; top: ${node.y}px`;
 
   const positionFromParent = (node) => {
-    if (node.type === "GROUP") {
+    if (node.type === "GROUP" || node.type === "BOOLEAN_OPERATION") {
       return "static";
     }
     if (node.id === figma.currentPage.selection[0].id) {
@@ -149,17 +177,6 @@ export function position(node) {
   return `
       position: ${positionFromParent(node)};
     `;
-
-  /*
-  if (!node.layoutMode || node.layoutMode === "NONE") {
-    return `
-      position: ${positionFromParent(node)};
-    `;
-  }*/
-
-  /*if (node.layoutMode === "VERTICAL" || node.layoutMode === "HORIZONTAL") {
-    return `position: relative;`;
-  }*/
 }
 
 export function boxShadow(node) {
@@ -215,6 +232,7 @@ export function fontStyle(node) {
 }
 
 export function fillColor(node) {
+  if (node.type === "VECTOR" || node.type === "BOOLEAN_OPERATION") return "";
   //atm only one fill is supported
   const fill = node.fills?.[0];
 
@@ -241,6 +259,19 @@ export function fillColor(node) {
     )})`;
   }
 
+  if (node.fillStyleId) {
+    const shortStyleName = cleanStyleName(
+      figma.getStyleById(node.fillStyleId)?.name
+    );
+
+    const color =
+      node.fills?.[0]?.opacity < 1
+        ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity)
+        : rgbToHex(node.fills?.[0]?.color);
+
+    return `var(--${shortStyleName}, ${color})`;
+  }
+
   return node.fills?.[0]?.opacity < 1
     ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity)
     : rgbToHex(node.fills?.[0]?.color);
@@ -264,6 +295,19 @@ export function borderRadius(node) {
       ? node.cornerRadius + "px"
       : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`
   };`;
+}
+
+export function lineHeight(node) {
+  if (!node.lineHeight) return "";
+  if (node.lineHeight.unit === "AUTO") return "";
+
+  const unitMap = {
+    PIXELS: "px",
+    PERCENT: "%",
+  };
+
+  const unit = unitMap[node.lineHeight.unit];
+  return `line-height: ${node.lineHeight.value}${unit};`;
 }
 
 /* css props helepers end */
