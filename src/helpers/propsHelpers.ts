@@ -47,8 +47,8 @@ export function displayProp(node) {
     node.layoutAlign === "STRETCH" ? "align-self: stretch;" : "";
 
   const alignItemsMap = {
-    MIN: "start",
-    MAX: "end",
+    MIN: "flex-start",
+    MAX: "flex-end",
     CENTER: "center",
     SPACE_BETWEEN: "space-between",
   };

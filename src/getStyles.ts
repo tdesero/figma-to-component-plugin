@@ -1,4 +1,4 @@
-import { cleanStyleName, colorAsHexOrRgba, rgbToHex } from "./helpers/helpers";
+import { cleanStyleName, colorAsHexOrRgba } from "./helpers/helpers";
 
 export function getStyles(figma) {
   const styles = figma.getLocalPaintStyles().map(({ name, paints }) => {
