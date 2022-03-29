@@ -12,12 +12,12 @@ import {
   overflow,
   opacity,
   lineHeight,
+  strokeColor,
 } from "./helpers/propsHelpers";
 
 import {
   makeSafeForCSS,
   colorAsHexOrRgba,
-  svgDataToFixed,
   getTransforms,
 } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
@@ -204,8 +204,8 @@ function allChildrenAreVector(frame) {
 }
 
 function createSVG(node, className) {
-  const paths = node.vectorPaths?.map((p) => {
-    return `<path d="${svgDataToFixed(p.data, 3)}" fill-rule="${p.windingRule
+  const paths = node.fillGeometry?.map((p) => {
+    return `<path d="${p.data}" fill-rule="${p.windingRule
       .toString()
       .toLowerCase()}" />`;
   });
@@ -215,11 +215,9 @@ function createSVG(node, className) {
   width="${node.width}" 
   height="${node.height}" 
   stroke-width="${node.strokeWeight}" 
-  stroke="${colorAsHexOrRgba(node.strokes?.[0])}" 
+  stroke="${strokeColor(node)}" 
   stroke-linecap="${node.strokeCap.toString().toLowerCase()}"
-  fill="${
-    node.fills?.length === 0 ? "none" : colorAsHexOrRgba(node.fills?.[0])
-  }"
+  fill="${node.fills?.length === 0 ? "none" : fillColor(node)}"
   transform-origin="0 0"
   transform="scale(${getTransforms(node.absoluteTransform).scaleX} ${
     getTransforms(node.absoluteTransform).scaleY
@@ -231,17 +229,15 @@ function createSVG(node, className) {
 
 function createSVGOfChildren(node, className) {
   const paths = node.children?.map((n) => {
-    return n.vectorPaths
+    return n.fillGeometry
       ?.map((p) => {
         return `<path 
-        d="${svgDataToFixed(p.data, 3)}"
+        d="${p.data}"
         fill-rule="${p.windingRule.toString().toLowerCase()}"
-        stroke="${colorAsHexOrRgba(n.strokes?.[0])}"
+        stroke="${strokeColor(n)}"
         stroke-width="${n.strokeWeight}"  
         stroke-linecap="${n.strokeCap.toString().toLowerCase()}"
-        fill="${
-          n.fills?.length === 0 ? "none" : colorAsHexOrRgba(n.fills?.[0])
-        }" 
+        fill="${n.fills?.length === 0 ? "none" : fillColor(n)}" 
         transform-origin="0 0"
         transform="translate(${n.x} ${n.y}) rotate(${
           n.rotation * -1

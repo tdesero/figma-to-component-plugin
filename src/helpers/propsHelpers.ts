@@ -11,14 +11,16 @@ export function borderProp(node) {
   if (node.type === "VECTOR") return "";
   if (!node.strokes || !node.strokeWeight || node.strokes.length < 1) return "";
 
-  return `${
-    node.strokeStyleId &&
-    "/*" + figma.getStyleById(node.strokeStyleId)?.name + "*/"
-  } border: ${node.strokeWeight}px solid ${
-    node.strokes[0].opacity < 1
-      ? rgbaColor(node.strokes[0].color, node.strokes[0].opacity)
-      : rgbToHex(node.strokes[0].color)
-  };`;
+  if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
+    return `
+    border-width:  ${node.strokeWeight}px; 
+    border-style: solid; 
+    border-image: ${strokeColor(node)}; 
+    border-image-slice: 1;
+    `;
+  }
+
+  return `border: ${node.strokeWeight}px solid ${strokeColor(node)};`;
 }
 
 export function paddingProp(node) {
@@ -295,6 +297,48 @@ export function borderRadius(node) {
       ? node.cornerRadius + "px"
       : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`
   };`;
+}
+
+export function strokeColor(node) {
+  /* TODO: this is quite the same function as fillColor -> refactor to share the same code base */
+
+  const stroke = node.strokes?.[0];
+
+  if (!stroke) {
+    return "transparent";
+  }
+
+  if (!stroke.visible) {
+    return "transparent";
+  }
+
+  if (stroke.type === "GRADIENT_LINEAR") {
+    const { gradientStops } = stroke;
+    const transforms = getTransforms(stroke.gradientTransform);
+
+    const gradientMap = gradientStops.map((s) => {
+      return `${rgbaColor(s.color, s.color.a)} ${s.position * 100}%`;
+    });
+
+    return `linear-gradient(${transforms.angle + 90}deg, ${gradientMap.join(
+      ","
+    )})`;
+  }
+
+  const color =
+    node.strokes?.[0]?.opacity < 1
+      ? rgbaColor(node.strokes?.[0]?.color, node.strokes?.[0]?.opacity)
+      : rgbToHex(node.strokes?.[0]?.color);
+
+  if (node.strokeStyleId) {
+    const shortStyleName = cleanStyleName(
+      figma.getStyleById(node.strokeStyleId)?.name
+    );
+
+    return `var(--${shortStyleName}, ${color})`;
+  }
+
+  return color;
 }
 
 export function lineHeight(node) {

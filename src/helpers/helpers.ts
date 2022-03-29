@@ -67,15 +67,6 @@ export function cleanStyleName(name) {
   return makeSafeForCSS(name.replaceAll(" ", ""));
 }
 
-export function svgDataToFixed(data, n = 3) {
-  return data
-    .split(" ")
-    .map((s) => {
-      return !isNaN(s) ? (+s).toFixed(n) : s;
-    })
-    .join(" ");
-}
-
 /**
  * Returns all relevant transformation information from a (figma) transform matrix
  */
@@ -106,23 +97,7 @@ export function getTransforms(fm) {
       " "
     ),
   };
-  /*
-  var angle = Math.atan2(m[1], m[0]),
-    denom = Math.pow(m[0], 2) + Math.pow(m[1], 2),
-    scaleX = Math.sqrt(denom),
-    scaleY = (m[0] * m[3] - m[2] * m[1]) / scaleX,
-    skewX = Math.atan2(m[0] * m[2] + m[1] * m[3], denom);
-  return {
-    angle: angle / (Math.PI / 180), // this is rotation angle in degrees
-    scaleX: scaleX, // scaleX factor
-    scaleY: scaleY, // scaleY factor
-    skewX: skewX / (Math.PI / 180), // skewX angle degrees
-    skewY: 0, // skewY angle degrees
-    translateX: m[4], // translation point  x
-    translateY: m[5], // translation point  y
-  }; */
 }
-/* helpers end */
 
 function decomposeMatrix2DW3(m) {
   var row0x = m.a;
