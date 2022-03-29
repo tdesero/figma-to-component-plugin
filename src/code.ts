@@ -204,7 +204,8 @@ function allChildrenAreVector(frame) {
 }
 
 function createSVG(node, className) {
-  const paths = node.fillGeometry?.map((p) => {
+  const geometry = node.vectorPaths;
+  const paths = geometry?.map((p) => {
     return `<path d="${p.data}" fill-rule="${p.windingRule
       .toString()
       .toLowerCase()}" />`;
@@ -229,7 +230,8 @@ function createSVG(node, className) {
 
 function createSVGOfChildren(node, className) {
   const paths = node.children?.map((n) => {
-    return n.fillGeometry
+    const geometry = n.vectorPaths;
+    return geometry
       ?.map((p) => {
         return `<path 
         d="${p.data}"
