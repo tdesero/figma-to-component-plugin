@@ -134,7 +134,14 @@
 
     const variables =
       ":root {\n" +
-      styles
+      "  /* Colors */\n" +
+      styles?.paintStyles
+        ?.map(({ name, value }) => {
+          return `  --${name}: ${value};`;
+        })
+        .join("\n") +
+      "\n\n  /* Fonts */\n" +
+      styles?.textStyles
         ?.map(({ name, value }) => {
           return `  --${name}: ${value};`;
         })

@@ -26,7 +26,7 @@ export function rgbaColor(obj, a) {
   const { r, g, b } = obj;
   return `rgba(${componentTo255(r)}, ${componentTo255(g)}, ${componentTo255(
     b
-  )}, ${a})`;
+  )}, ${a.toFixed(2)})`;
 }
 
 export function colorAsHexOrRgba(fill) {
@@ -63,6 +63,7 @@ export function makeSafeForCSS(name) {
 export function cleanStyleName(name) {
   //const nameArr = name.split("/");
   //return makeSafeForCSS(nameArr[nameArr.length - 1].trim());
+  if (!name) return;
 
   return makeSafeForCSS(name.replaceAll(" ", ""));
 }

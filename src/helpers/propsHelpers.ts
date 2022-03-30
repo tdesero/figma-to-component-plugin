@@ -13,7 +13,7 @@ export function borderProp(node) {
 
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
     return `
-    border-width:  ${node.strokeWeight}px; 
+    border-width:  ${node.strokeWeight}pxs; 
     border-style: solid; 
     border-image: ${strokeColor(node)}; 
     border-image-slice: 1;
@@ -189,11 +189,13 @@ export function boxShadow(node) {
   if (shadows.length === 0) return "";
 
   let css = "box-shadow: ";
-  shadows.forEach((s) => {
-    css += `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${
-      s.spread
-    }px ${rgbaColor(s.color, s.color.a)}`;
-  });
+  css += shadows
+    .map((s) => {
+      return `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${
+        s.spread
+      }px ${rgbaColor(s.color, s.color.a)}`;
+    })
+    .join(", ");
   return (
     `${
       node.effectStyleId &&
@@ -204,8 +206,8 @@ export function boxShadow(node) {
   );
 }
 
-export function fontStyle(node) {
-  const isItalic = node.fontName?.style?.toLowerCase().includes("italic");
+export function fontStyleAsObject(fontName) {
+  const isItalic = fontName?.style?.toLowerCase().includes("italic");
 
   const weightMap = {
     thin: 100,
@@ -223,14 +225,12 @@ export function fontStyle(node) {
     black: 900,
   };
 
-  const weight = node.fontName?.style
-    ?.toLowerCase()
-    .replace("italic", "")
-    .trim();
+  const weight = fontName?.style?.toLowerCase().replace("italic", "").trim();
 
-  return `font-weight: ${weightMap[weight]}; ${
-    isItalic ? "font-style: italic;" : ""
-  }`;
+  return {
+    weight: weightMap[weight],
+    isItalic,
+  };
 }
 
 export function fillColor(node) {
@@ -262,7 +262,7 @@ export function fillColor(node) {
   }
 
   if (node.fillStyleId) {
-    const shortStyleName = cleanStyleName(
+    const styleName = cleanStyleName(
       figma.getStyleById(node.fillStyleId)?.name
     );
 
@@ -271,7 +271,7 @@ export function fillColor(node) {
         ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity)
         : rgbToHex(node.fills?.[0]?.color);
 
-    return `var(--${shortStyleName}, ${color})`;
+    return `var(--${styleName}, ${color})`;
   }
 
   return node.fills?.[0]?.opacity < 1
@@ -331,27 +331,66 @@ export function strokeColor(node) {
       : rgbToHex(node.strokes?.[0]?.color);
 
   if (node.strokeStyleId) {
-    const shortStyleName = cleanStyleName(
+    const styleName = cleanStyleName(
       figma.getStyleById(node.strokeStyleId)?.name
     );
 
-    return `var(--${shortStyleName}, ${color})`;
+    return `var(--${styleName}, ${color})`;
   }
 
   return color;
 }
 
-export function lineHeight(node) {
-  if (!node.lineHeight) return "";
-  if (node.lineHeight.unit === "AUTO") return "";
+export function lineHeight(nodeOrStyle) {
+  if (!nodeOrStyle.lineHeight) return "";
+  if (nodeOrStyle.lineHeight.unit === "AUTO") return "";
 
   const unitMap = {
     PIXELS: "px",
     PERCENT: "%",
   };
 
-  const unit = unitMap[node.lineHeight.unit];
-  return `line-height: ${node.lineHeight.value}${unit};`;
+  const unit = unitMap[nodeOrStyle.lineHeight.unit];
+  return `${nodeOrStyle.lineHeight.value}${unit}`;
+}
+
+export function fontShorthand({
+  lineHeight,
+  fontSize,
+  weight,
+  fontFamily,
+  isItalic,
+}) {
+  const italic = isItalic ? "italic " : "";
+  return `${weight} ${italic}${fontSize}px${
+    lineHeight !== "" ? "/" + lineHeight : ""
+  } '${fontFamily}'`;
+}
+
+export function fontProp(node) {
+  const { weight, isItalic } = fontStyleAsObject(node.fontName);
+
+  const fontSize = node.fontSize?.toString();
+  const fontFamily = node.fontName.family?.toString();
+  const lineHeightStr = lineHeight(node);
+
+  const shorthand = fontShorthand({
+    lineHeight: lineHeightStr,
+    fontSize,
+    weight,
+    fontFamily,
+    isItalic,
+  });
+
+  if (node.textStyleId) {
+    const styleName = cleanStyleName(
+      figma.getStyleById(node.textStyleId.toString())?.name
+    );
+
+    return `font: var(--${styleName}, ${shorthand});`;
+  }
+
+  return `font: ${shorthand};`;
 }
 
 /* css props helepers end */

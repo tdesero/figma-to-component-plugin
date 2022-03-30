@@ -5,21 +5,16 @@ import {
   transforms,
   borderRadius,
   fillColor,
-  fontStyle,
   boxShadow,
   dimensions,
   position,
   overflow,
   opacity,
-  lineHeight,
   strokeColor,
+  fontProp,
 } from "./helpers/propsHelpers";
 
-import {
-  makeSafeForCSS,
-  colorAsHexOrRgba,
-  getTransforms,
-} from "./helpers/helpers";
+import { makeSafeForCSS, getTransforms } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
 function nodeCSS(node) {
@@ -28,11 +23,8 @@ function nodeCSS(node) {
   if (node.type?.toString() === "TEXT") {
     return `
       color: ${fillColor(node)};
-      font-size: ${node.fontSize?.toString()}px;
-      font-family: ${node.fontName.family?.toString()};
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
-      ${lineHeight(node)}
-      ${fontStyle(node)}
+      ${fontProp(node)}
       ${opacity(node)}
       ${position(node)}
       ${displayProp(node)}
