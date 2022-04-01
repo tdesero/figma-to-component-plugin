@@ -3,13 +3,14 @@ import {
   fontStyleAsObject,
   lineHeight,
   fontShorthand,
+  getColor,
 } from "./helpers/propsHelpers";
 
 export function getStyles(figma) {
   const paintStyles = figma.getLocalPaintStyles()?.map(({ name, paints }) => {
     return {
       name: cleanStyleName(name),
-      value: colorAsHexOrRgba(paints?.[0]),
+      value: getColor(paints?.[0], false),
     };
   });
 

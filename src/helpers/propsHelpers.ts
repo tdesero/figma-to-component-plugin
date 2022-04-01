@@ -1,10 +1,4 @@
-import {
-  rgbToHex,
-  rgbaColor,
-  getTransforms,
-  makeSafeForCSS,
-  cleanStyleName,
-} from "./helpers";
+import { rgbToHex, rgbaColor, getTransforms, cleanStyleName } from "./helpers";
 
 /* css props helpers */
 export function borderProp(node) {
@@ -13,7 +7,7 @@ export function borderProp(node) {
 
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
     return `
-    border-width:  ${node.strokeWeight}pxs; 
+    border-width:  ${node.strokeWeight}px; 
     border-style: solid; 
     border-image: ${strokeColor(node)}; 
     border-image-slice: 1;
@@ -238,45 +232,7 @@ export function fillColor(node) {
   //atm only one fill is supported
   const fill = node.fills?.[0];
 
-  if (!fill) {
-    return "transparent";
-  }
-
-  if (!fill.visible) {
-    return "transparent";
-  }
-
-  if (fill.type === "GRADIENT_LINEAR") {
-    const { gradientStops } = fill;
-    const transforms = getTransforms(fill.gradientTransform);
-
-    console.log(fill.gradientTransform);
-
-    const gradientMap = gradientStops.map((s) => {
-      return `${rgbaColor(s.color, s.color.a)} ${s.position * 100}%`;
-    });
-
-    return `linear-gradient(${transforms.angle + 90}deg, ${gradientMap.join(
-      ","
-    )})`;
-  }
-
-  if (node.fillStyleId) {
-    const styleName = cleanStyleName(
-      figma.getStyleById(node.fillStyleId)?.name
-    );
-
-    const color =
-      node.fills?.[0]?.opacity < 1
-        ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity)
-        : rgbToHex(node.fills?.[0]?.color);
-
-    return `var(--${styleName}, ${color})`;
-  }
-
-  return node.fills?.[0]?.opacity < 1
-    ? rgbaColor(node.fills?.[0]?.color, node.fills?.[0]?.opacity)
-    : rgbToHex(node.fills?.[0]?.color);
+  return getColor(fill, node.fillStyleId);
 }
 
 export function transforms(node) {
@@ -290,6 +246,21 @@ export function transforms(node) {
   }
 }
 
+export function gradientLinear(fill) {
+  const { gradientStops } = fill;
+  const transforms = getTransforms(fill.gradientTransform);
+
+  console.log(fill.gradientTransform);
+
+  const gradientMap = gradientStops.map((s) => {
+    return `${rgbaColor(s.color, s.color.a)} ${s.position * 100}%`;
+  });
+
+  return `linear-gradient(${transforms.angle + 90}deg, ${gradientMap.join(
+    ","
+  )})`;
+}
+
 export function borderRadius(node) {
   if (node.type === "ELLIPSE") return "border-radius: 50%;";
   return `border-radius: ${
@@ -300,45 +271,38 @@ export function borderRadius(node) {
 }
 
 export function strokeColor(node) {
-  /* TODO: this is quite the same function as fillColor -> refactor to share the same code base */
-
   const stroke = node.strokes?.[0];
 
-  if (!stroke) {
+  return getColor(stroke, node.strokeStyleId);
+}
+
+export function getColor(fillOrColor, styleId) {
+  if (!fillOrColor) {
     return "transparent";
   }
 
-  if (!stroke.visible) {
+  if (!fillOrColor.visible) {
     return "transparent";
   }
 
-  if (stroke.type === "GRADIENT_LINEAR") {
-    const { gradientStops } = stroke;
-    const transforms = getTransforms(stroke.gradientTransform);
-
-    const gradientMap = gradientStops.map((s) => {
-      return `${rgbaColor(s.color, s.color.a)} ${s.position * 100}%`;
-    });
-
-    return `linear-gradient(${transforms.angle + 90}deg, ${gradientMap.join(
-      ","
-    )})`;
+  if (fillOrColor.type === "GRADIENT_LINEAR") {
+    return gradientLinear(fillOrColor);
   }
 
-  const color =
-    node.strokes?.[0]?.opacity < 1
-      ? rgbaColor(node.strokes?.[0]?.color, node.strokes?.[0]?.opacity)
-      : rgbToHex(node.strokes?.[0]?.color);
+  if (styleId) {
+    const styleName = cleanStyleName(figma.getStyleById(styleId)?.name);
 
-  if (node.strokeStyleId) {
-    const styleName = cleanStyleName(
-      figma.getStyleById(node.strokeStyleId)?.name
-    );
+    const color =
+      fillOrColor.opacity < 1
+        ? rgbaColor(fillOrColor.color, fillOrColor.opacity)
+        : rgbToHex(fillOrColor.color);
 
     return `var(--${styleName}, ${color})`;
   }
 
-  return color;
+  return fillOrColor.opacity < 1
+    ? rgbaColor(fillOrColor.color, fillOrColor.opacity)
+    : rgbToHex(fillOrColor.color);
 }
 
 export function lineHeight(nodeOrStyle) {
