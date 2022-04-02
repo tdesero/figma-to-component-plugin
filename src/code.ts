@@ -14,14 +14,14 @@ import {
   fontProp,
 } from "./helpers/propsHelpers";
 
-import { makeSafeForCSS, getTransforms } from "./helpers/helpers";
+import { makeSafeForCSS } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
 /* JUST FOR TESTING */
-import { tailwind } from "./tailwind";
+//import { tailwind } from "./tailwind";
 
 function nodeCSS(node) {
-  console.log(node);
+  console.log("node", node);
 
   if (node.type?.toString() === "TEXT") {
     return `
@@ -145,46 +145,40 @@ function printCSS(tree) {
   return css;
 }
 
-function printHTML(tree) {
-  let html = "";
+async function printHTML(tree) {
+  let html: string = "";
 
-  function childrenEl(treeElement) {
-    if (treeElement.children?.length > 0) {
-      return theChildren(treeElement.children);
+  async function theChildren(children) {
+    if (children?.length > 0) {
+      const all = await Promise.all(
+        children.map(async (treeElement) => {
+          if (
+            treeElement.type === "VECTOR" ||
+            treeElement.type === "BOOLEAN_OPERATION" ||
+            treeElement.allChildrenAreVector
+          ) {
+            return await createSVG(treeElement.originalNode, treeElement.name);
+          }
+          return `<div class="${treeElement.name}">\n${
+            treeElement.characters
+              ? treeElement.characters.replaceAll("\n", "<br />")
+              : ""
+          } ${await theChildren(treeElement.children)}\n</div>`;
+        })
+      );
+      return all.join("");
     } else {
       return "";
     }
   }
-  function theChildren(children) {
-    return children
-      .map((treeElement) => {
-        if (treeElement.type === "VECTOR") {
-          return createSVG(treeElement.originalNode, treeElement.name);
-        }
-        if (treeElement.allChildrenAreVector) {
-          return createSVGOfChildren(
-            treeElement.originalNode,
-            treeElement.name
-          );
-        }
-        return `<div class="${treeElement.name}">\n${
-          treeElement.characters
-            ? treeElement.characters.replaceAll("\n", "<br />")
-            : ""
-        } ${childrenEl(treeElement)}\n</div>`;
-      })
-      .join("");
-  }
 
-  // why isn't this just "childrenEl" ???
-  if (tree.type === "VECTOR") {
-    html = createSVG(tree.originalNode, tree.name);
-  } else if (tree.allChildrenAreVector) {
-    html = createSVGOfChildren(tree.originalNode, tree.name);
+  // this should become more DRY...
+  if (tree.type === "VECTOR" || tree.allChildrenAreVector) {
+    html = await createSVG(tree.originalNode, tree.name);
   } else {
     html += `<div class="${tree.name}">\n${
       tree.characters ? tree.characters.replaceAll("\n", "<br />") : ""
-    } ${childrenEl(tree)}\n</div>`;
+    } ${await theChildren(tree.children)}\n</div>`;
   }
 
   return html;
@@ -198,68 +192,18 @@ function allChildrenAreVector(frame) {
   );
 }
 
-/* TODO: Rewrite with exportAsync() */
-function createSVG(node, className) {
-  const geometry = node.vectorPaths;
-  const paths = geometry?.map((p) => {
-    return `<path d="${p.data}" fill-rule="${p.windingRule
-      .toString()
-      .toLowerCase()}" />`;
-  });
+async function createSVG(node, className) {
+  const svg: string = await node
+    .exportAsync({ format: "SVG", useAbsoluteBounds: true })
+    .then((res) =>
+      // Uint8Array to string and inject classname
+      String.fromCharCode
+        .apply(null, res)
+        .replace("<svg ", `<svg class="${className}" `)
+    )
+    .catch((err) => console.error(err));
 
-  return `<svg 
-  class="${className}"
-  width="${node.width}" 
-  height="${node.height}" 
-  stroke-width="${node.strokeWeight}" 
-  stroke="${strokeColor(node)}" 
-  stroke-linecap="${node.strokeCap.toString().toLowerCase()}"
-  fill="${node.fills?.length === 0 ? "none" : fillColor(node)}"
-  transform-origin="0 0"
-  transform="scale(${getTransforms(node.absoluteTransform).scaleX} ${
-    getTransforms(node.absoluteTransform).scaleY
-  })" 
-  >
-    ${paths.join("")}
-  </svg>`;
-}
-
-/* TODO: Rewrite with exportAsync() and combine with above */
-function createSVGOfChildren(node, className) {
-  const paths = node.children?.map((n) => {
-    const geometry = n.vectorPaths;
-    return geometry
-      ?.map((p) => {
-        return `<path 
-        d="${p.data}"
-        fill-rule="${p.windingRule.toString().toLowerCase()}"
-        stroke="${strokeColor(n)}"
-        stroke-width="${n.strokeWeight}"  
-        stroke-linecap="${n.strokeCap.toString().toLowerCase()}"
-        fill="${n.fills?.length === 0 ? "none" : fillColor(n)}" 
-        transform-origin="0 0"
-        transform="translate(${n.x} ${n.y}) rotate(${
-          n.rotation * -1
-        }, 0, 0) scale(${getTransforms(n.absoluteTransform).scaleX} ${
-          getTransforms(n.absoluteTransform).scaleY
-        })"
-      />`;
-      })
-      .join("");
-  });
-
-  return `<svg 
-    class="${className}"
-    width="${node.width}" 
-    height="${node.height}" 
-    viewBox="0 0 ${node.width} ${node.height}"
-    transform-origin="0 0"
-    transform="scale(${getTransforms(node.absoluteTransform).scaleX} ${
-    getTransforms(node.absoluteTransform).scaleY
-  })" 
-    >
-      ${paths.join("")}
-  </svg>`;
+  return svg;
 }
 
 figma.parameters.on(
@@ -280,15 +224,14 @@ figma.parameters.on(
   }
 );
 
-figma.on("run", ({ command, parameters }: RunEvent) => {
-  console.log("command: " + command, parameters);
-
-  console.log(tailwind(tree));
+figma.on("run", async ({ command, parameters }: RunEvent) => {
+  //console.log("command: " + command, parameters);
+  //console.log(tailwind(tree));
 
   figma.showUI(__html__, { height: 500, width: 400 });
   figma.ui.postMessage({
     css: printCSS(tree),
-    html: printHTML(tree),
+    html: await printHTML(tree),
     framework: parameters.framework,
     styles: parameters.withStyles === "All Styles" ? getStyles(figma) : null,
     name: figma.currentPage?.selection?.[0]?.name,

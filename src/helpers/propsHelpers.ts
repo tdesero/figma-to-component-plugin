@@ -91,8 +91,11 @@ export function displayProp(node) {
 }
 
 export function dimensions(node) {
+  /* NOTE: The Order of these if statements is important */
+
   let height = "";
   let width = "";
+  let additionalCss = "";
 
   if (node.layoutMode === "VERTICAL") {
     height =
@@ -123,19 +126,26 @@ export function dimensions(node) {
     height = "auto";
   }
 
+  if ((!node.children || node.children?.length === 0) && node.type !== "TEXT") {
+    height = node.height + "px";
+    width = node.width + "px";
+  }
+
   if (node.parent.layoutMode === "VERTICAL" && node.layoutAlign === "STRETCH") {
     width = "auto";
   }
 
   if (node.parent.layoutMode === "HORIZONTAL" && node.layoutGrow === 1) {
     width = "auto";
+    additionalCss = " flex: 1;";
   }
 
   if (node.parent.layoutMode === "VERTICAL" && node.layoutGrow === 1) {
     height = "auto";
+    additionalCss = " flex: 1;";
   }
 
-  return `width: ${width}; height: ${height};`;
+  return `width: ${width}; height: ${height};${additionalCss}`;
 }
 
 export function overflow(node) {
@@ -157,7 +167,7 @@ export function position(node) {
       : `left: ${node.x}px; top: ${node.y}px`;
 
   const positionFromParent = (node) => {
-    if (node.type === "GROUP" || node.type === "BOOLEAN_OPERATION") {
+    if (node.type === "GROUP") {
       return "static";
     }
     if (node.id === figma.currentPage.selection[0].id) {
