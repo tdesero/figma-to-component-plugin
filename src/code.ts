@@ -17,6 +17,9 @@ import {
 import { makeSafeForCSS, getTransforms } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
+/* JUST FOR TESTING */
+import { tailwind } from "./tailwind";
+
 function nodeCSS(node) {
   console.log(node);
 
@@ -195,6 +198,7 @@ function allChildrenAreVector(frame) {
   );
 }
 
+/* TODO: Rewrite with exportAsync() */
 function createSVG(node, className) {
   const geometry = node.vectorPaths;
   const paths = geometry?.map((p) => {
@@ -220,6 +224,7 @@ function createSVG(node, className) {
   </svg>`;
 }
 
+/* TODO: Rewrite with exportAsync() and combine with above */
 function createSVGOfChildren(node, className) {
   const paths = node.children?.map((n) => {
     const geometry = n.vectorPaths;
@@ -276,7 +281,10 @@ figma.parameters.on(
 );
 
 figma.on("run", ({ command, parameters }: RunEvent) => {
-  console.log(command, parameters);
+  console.log("command: " + command, parameters);
+
+  console.log(tailwind(tree));
+
   figma.showUI(__html__, { height: 500, width: 400 });
   figma.ui.postMessage({
     css: printCSS(tree),
