@@ -11,11 +11,6 @@
     {
       "name": "Framework",
       "key": "framework"
-    },
-    {
-      "name": "Export Styles",
-      "key": "withStyles",
-      "optional": true
     }
   ]
 }

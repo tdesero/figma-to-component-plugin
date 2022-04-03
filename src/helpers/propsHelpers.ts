@@ -1,6 +1,5 @@
 import { rgbToHex, rgbaColor, getTransforms, cleanStyleName } from "./helpers";
 
-/* css props helpers */
 export function borderProp(node) {
   if (node.type === "VECTOR") return "";
   if (!node.strokes || !node.strokeWeight || node.strokes.length < 1) return "";
@@ -30,8 +29,7 @@ export function paddingProp(node) {
 }
 
 export function displayProp(node) {
-  const flexShrinkGrow =
-    node.layoutGrow === 1 ? "flex-grow: 1; flex-shrink: 1;" : shrink();
+  const flexShrinkGrow = node.layoutGrow === 1 ? "flex: 1;" : shrink();
 
   function shrink() {
     return !(node.type === "TEXT") && !(node.primaryAxisSizingMode === "AUTO")
@@ -91,11 +89,10 @@ export function displayProp(node) {
 }
 
 export function dimensions(node) {
-  /* NOTE: The Order of these if statements is important */
+  /* NOTE: The Order of these if statements is important! */
 
   let height = "";
   let width = "";
-  let additionalCss = "";
 
   if (node.layoutMode === "VERTICAL") {
     height =
@@ -109,7 +106,6 @@ export function dimensions(node) {
       node.counterAxisSizingMode === "AUTO" ? "auto" : node.height + "px";
   }
 
-  // default case
   if (!node.layoutMode || node.layoutMode === "NONE") {
     height = node.textAutoResize?.toString().includes("HEIGHT")
       ? "auto"
@@ -137,15 +133,13 @@ export function dimensions(node) {
 
   if (node.parent.layoutMode === "HORIZONTAL" && node.layoutGrow === 1) {
     width = "auto";
-    additionalCss = " flex: 1;";
   }
 
   if (node.parent.layoutMode === "VERTICAL" && node.layoutGrow === 1) {
     height = "auto";
-    additionalCss = " flex: 1;";
   }
 
-  return `width: ${width}; height: ${height};${additionalCss}`;
+  return `width: ${width}; height: ${height};`;
 }
 
 export function overflow(node) {
@@ -366,5 +360,3 @@ export function fontProp(node) {
 
   return `font: ${shorthand};`;
 }
-
-/* css props helepers end */

@@ -113,6 +113,10 @@
       <button class="btn btn-secondary btn-sm mb-3" id="copy-vars">
         Copy variables
       </button>
+      <div class="alert alert-primary" role="alert">
+        This plugin can't load variables from other files. Please open the file
+        and run the plugin there.
+      </div>
       <pre><code class="hljs rounded" id="variables"></code></pre>
     </div>
   </div>
@@ -151,8 +155,6 @@
         })
         .join("\n") +
       "\n}\n\n";
-
-    console.log(event.data.pluginMessage);
 
     const html = html_beautify(event.data.pluginMessage.html, {
       indent_size: "2",
@@ -202,7 +204,10 @@
     document.querySelector("#variables").innerText = styles ? variables : "";
 
     var iframe = document.createElement("iframe");
-    var htmlDoc = html + "<style>" + css + "</style>";
+    var htmlDoc =
+      framework === "tailwind(beta)"
+        ? "No preview possible"
+        : html + "<style>" + css + "</style>";
     document.querySelector("#preview").innerHTML = "";
     document.querySelector("#preview").appendChild(iframe);
     iframe.contentWindow.document.open();
@@ -226,6 +231,9 @@
           "&lt;style&gt;\n" +
           highlightedCss +
           "\n&lt;/style&gt;";
+        break;
+      case "tailwind(beta)":
+        document.querySelector("#code").innerHTML = highlightedHtml;
         break;
       default:
         return;

@@ -1,4 +1,4 @@
-import { cleanStyleName, colorAsHexOrRgba } from "./helpers/helpers";
+import { cleanStyleName } from "./helpers/helpers";
 import {
   fontStyleAsObject,
   lineHeight,
@@ -32,7 +32,6 @@ export function getStyles(figma) {
       }),
     };
   });
-  console.log("textstyles", textStyles);
 
   return {
     paintStyles,

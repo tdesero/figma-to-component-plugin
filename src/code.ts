@@ -17,8 +17,8 @@ import {
 import { makeSafeForCSS } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
-/* JUST FOR TESTING */
-//import { tailwind } from "./tailwind";
+/* Beta */
+import { tailwind } from "./tailwind";
 
 function nodeCSS(node) {
   console.log("node", node);
@@ -192,7 +192,7 @@ function allChildrenAreVector(frame) {
   );
 }
 
-async function createSVG(node, className) {
+export async function createSVG(node, className) {
   const svg: string = await node
     .exportAsync({ format: "SVG", useAbsoluteBounds: true })
     .then((res) =>
@@ -211,12 +211,8 @@ figma.parameters.on(
   ({ parameters, key, query, result }: ParameterInputEvent) => {
     switch (key) {
       case "framework":
-        const frameworks = ["react", "html"];
+        const frameworks = ["react", "html", "tailwind(beta)"];
         result.setSuggestions(frameworks.filter((s) => s.includes(query)));
-        break;
-      case "withStyles":
-        const answers = ["All Styles"];
-        result.setSuggestions(answers.filter((s) => s.includes(query)));
         break;
       default:
         return;
@@ -225,19 +221,19 @@ figma.parameters.on(
 );
 
 figma.on("run", async ({ command, parameters }: RunEvent) => {
-  //console.log("command: " + command, parameters);
-  //console.log(tailwind(tree));
-
   figma.showUI(__html__, { height: 500, width: 400 });
+
+  const css = parameters.framework === "tailwind(beta)" ? "-" : printCSS(tree);
+  const html =
+    parameters.framework === "tailwind(beta)"
+      ? await tailwind(tree)
+      : await printHTML(tree);
+
   figma.ui.postMessage({
-    css: printCSS(tree),
-    html: await printHTML(tree),
+    css,
+    html,
     framework: parameters.framework,
-    styles: parameters.withStyles === "All Styles" ? getStyles(figma) : null,
+    styles: getStyles(figma),
     name: figma.currentPage?.selection?.[0]?.name,
   });
 });
-
-// Make sure to close the plugin when you're done. Otherwise the plugin will
-// keep running, which shows the cancel button at the bottom of the screen.
-//figma.closePlugin();
