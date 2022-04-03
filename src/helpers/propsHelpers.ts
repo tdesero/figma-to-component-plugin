@@ -115,19 +115,15 @@ export function dimensions(node) {
       : node.width + "px";
   }
 
-  if (
-    node.parent.layoutMode === "HORIZONTAL" &&
-    node.layoutAlign === "STRETCH"
-  ) {
-    height = "auto";
-  }
-
   if ((!node.children || node.children?.length === 0) && node.type !== "TEXT") {
     height = node.height + "px";
     width = node.width + "px";
   }
 
-  if (node.parent.layoutMode === "VERTICAL" && node.layoutAlign === "STRETCH") {
+  if (
+    (node.parent.layoutMode === "VERTICAL" && node.layoutAlign === "STRETCH") ||
+    node.constraints?.horizontal === "STRETCH"
+  ) {
     width = "auto";
   }
 
@@ -135,7 +131,12 @@ export function dimensions(node) {
     width = "auto";
   }
 
-  if (node.parent.layoutMode === "VERTICAL" && node.layoutGrow === 1) {
+  if (
+    (node.parent.layoutMode === "HORIZONTAL" &&
+      node.layoutAlign === "STRETCH") ||
+    (node.parent.layoutMode === "VERTICAL" && node.layoutGrow === 1) ||
+    node.constraints?.vertical === "STRETCH"
+  ) {
     height = "auto";
   }
 
@@ -155,27 +156,58 @@ export function opacity(node) {
 }
 
 export function position(node) {
-  const coord =
-    node.id === figma.currentPage.selection[0].id
-      ? ""
-      : `left: ${node.x}px; top: ${node.y}px`;
+  let coord = "";
+
+  function findAbsoluteParent(node) {
+    if (node.parent.type === "GROUP") {
+      return findAbsoluteParent(node.parent);
+    }
+    return node.parent;
+  }
+
+  if (node.id !== figma.currentPage.selection[0].id) {
+    // Super ugly but works for now...
+    if (node.constraints?.horizontal === "MAX") {
+      coord += `right: ${
+        findAbsoluteParent(node).width - node.width - node.x
+      }px;`;
+    } else if (node.constraints?.horizontal === "STRETCH") {
+      coord += `right: ${
+        findAbsoluteParent(node).width - node.width - node.x
+      }px; left: ${node.x}px;`;
+    } else {
+      coord += `left: ${node.x}px;`;
+    }
+
+    if (node.constraints?.vertical === "MAX") {
+      coord += `bottom: ${
+        findAbsoluteParent(node).height - node.height - node.y
+      }px;`;
+    } else if (node.constraints?.vertical === "STRETCH") {
+      coord += `bottom: ${
+        findAbsoluteParent(node).height - node.height - node.y
+      }px; top: ${node.y}px;`;
+    } else {
+      coord += `top: ${node.y}px;`;
+    }
+  }
 
   const positionFromParent = (node) => {
     if (node.type === "GROUP") {
-      return "static";
+      return "static;";
     }
     if (node.id === figma.currentPage.selection[0].id) {
-      return "relative";
+      return "relative;";
     }
     return `${
       node.parent.layoutMode === "NONE" || !node.parent.layoutMode
         ? `absolute; ${coord}`
-        : "relative"
+        : "relative;"
     }`;
   };
 
   return `
-      position: ${positionFromParent(node)};
+      position: ${positionFromParent(node)}
     `;
 }
 
@@ -267,6 +299,9 @@ export function gradientLinear(fill) {
 
 export function borderRadius(node) {
   if (node.type === "ELLIPSE") return "border-radius: 50%;";
+
+  if (!node.cornerRadius && !node.topLeftRadius) return "";
+
   return `border-radius: ${
     typeof node.cornerRadius === "number"
       ? node.cornerRadius + "px"

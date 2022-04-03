@@ -1,6 +1,6 @@
 /* 
 This file tries to convert figma into tailwind.
-It tries to interpret the css already generated from this plugin into tailwind classes.
+It tries to interpret the css already generated from this plugin as tailwind classes.
 This will never work perfectly but may provide a starting point for development.
 */
 
@@ -45,6 +45,22 @@ const twMap = {
     "9999px": "full",
   },
   background: { transparent: "transparent" },
+  "justify-content": {
+    "flex-start": "start",
+    "flex-end": "end",
+    center: "center",
+  },
+  "align-items": {
+    "flex-start": "start",
+    "flex-end": "end",
+    center: "center",
+  },
+  "align-self": {
+    stretch: "stretch",
+  },
+  overflow: {
+    hidden: "hidden",
+  },
 };
 
 export async function tailwind(tree) {
@@ -118,8 +134,6 @@ function tailwindClassNames(css, node) {
     .map((e) => e.trim())
     .filter((e) => e !== "");
 
-  console.log(cssLineByLine);
-
   const keyValuePairs = cssLineByLine.map((line) => {
     const [key, value] = line.split(":");
 
@@ -127,7 +141,6 @@ function tailwindClassNames(css, node) {
   });
 
   const cssPropsMap = {
-    border: "border",
     "border-radius": "rounded",
     width: "w",
     height: "h",
@@ -139,6 +152,10 @@ function tailwindClassNames(css, node) {
     gap: "gap",
     top: "top",
     left: "left",
+    "justify-content": "justify",
+    "align-items": "items",
+    "align-self": "self",
+    overflow: "overflow",
   };
 
   // these will be generated from node or are not needed at all
