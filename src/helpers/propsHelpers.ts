@@ -175,6 +175,10 @@ export function position(node) {
       coord += `right: ${
         findAbsoluteParent(node).width - node.width - node.x
       }px; left: ${node.x}px;`;
+    } else if (node.constraints?.horizontal === "CENTER") {
+      coord += `left: calc(50% - ${
+        findAbsoluteParent(node).width / 2 - node.x
+      }px);`;
     } else {
       coord += `left: ${node.x}px;`;
     }
@@ -187,6 +191,10 @@ export function position(node) {
       coord += `bottom: ${
         findAbsoluteParent(node).height - node.height - node.y
       }px; top: ${node.y}px;`;
+    } else if (node.constraints?.vertical === "CENTER") {
+      coord += `top: calc(50% - ${
+        findAbsoluteParent(node).height / 2 - node.y
+      }px);`;
     } else {
       coord += `top: ${node.y}px;`;
     }
