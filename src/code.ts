@@ -54,14 +54,21 @@ function nodeCSS(node) {
   }
 }
 
+function segmentCss(textSegment) {
+  return `
+      color: ${fillColor(textSegment)};
+      ${fontProp(textSegment)}
+    `;
+}
+
 function createTree(selection) {
   let componentName = "component";
 
   // Only to prevent duplicate Names
   const allNames = [];
 
-  function uniqueName(className, n = 0) {
-    const suffix = n > 0 ? n : "";
+  function uniqueName(className, n = 1) {
+    const suffix = n > 1 ? n : "";
     if (allNames.includes(className + suffix)) {
       return uniqueName(className, n + 1);
     } else {
@@ -90,26 +97,34 @@ function createTree(selection) {
     type: frame.type,
     characters: frame.characters,
     originalNode: frame,
+    textSegments: [],
   };
 
   function theChildren(children, treeChildren) {
     children.forEach((node, i) => {
       if (!node.visible) return;
+      const name = `${componentName}__${uniqueName(makeSafeForCSS(node.name))}`;
 
       const newElement = {
-        name: `${componentName}__${uniqueName(makeSafeForCSS(node.name))}`,
+        name,
         css: nodeCSS(node),
         allChildrenAreVector: allChildrenAreVector(node),
         children: [],
         type: node.type,
         characters: node.characters,
         originalNode: node,
+        textSegments: [],
       };
 
       treeChildren?.push(newElement);
 
       if (node.children?.length > 0) {
         theChildren(node.children, newElement.children);
+      }
+
+      if (node.type === "TEXT") {
+        const textSegments = getTextSegments(node, name, uniqueName);
+        newElement.textSegments = textSegments;
       }
     });
   }
@@ -118,7 +133,36 @@ function createTree(selection) {
     theChildren(frame.children, tree.children);
   }
 
+  if (frame.type === "TEXT") {
+    const textSegments = getTextSegments(frame, tree.name, uniqueName);
+    tree.textSegments = textSegments;
+  }
+
   return tree;
+}
+
+function getTextSegments(node, componentName, uniqueName) {
+  const segments = node.getStyledTextSegments([
+    "fontSize",
+    "fontName",
+    "textDecoration",
+    "textCase",
+    "lineHeight",
+    "letterSpacing",
+    "fills",
+    "textStyleId",
+    "fillStyleId",
+    "listOptions",
+    "indentation",
+  ]);
+
+  return segments.map((s) => {
+    return {
+      ...s,
+      name: `${uniqueName(makeSafeForCSS(componentName + "-span"))}`,
+      css: segmentCss(s),
+    };
+  });
 }
 
 const tree = createTree(figma.currentPage.selection);
@@ -133,9 +177,19 @@ function printCSS(tree) {
       if (treeElement.allChildrenAreVector) {
         return;
       }
+      if (treeElement.textSegments.length > 1) {
+        treeElement.textSegments.forEach((s) => {
+          css += `.${s.name} {${s.css}}\n`;
+        });
+      }
       if (treeElement.children.length > 0) {
         theChildren(treeElement.children);
       }
+    });
+  }
+  if (tree.textSegments.length > 1) {
+    tree.textSegments.forEach((s) => {
+      css += `.${s.name} {${s.css}}\n`;
     });
   }
   if (!tree.allChildrenAreVector) {
@@ -160,8 +214,8 @@ async function printHTML(tree) {
             return await createSVG(treeElement.originalNode, treeElement.name);
           }
           return `<div class="${treeElement.name}">\n${
-            treeElement.characters
-              ? treeElement.characters.replaceAll("\n", "<br />")
+            treeElement.textSegments
+              ? printTextSegments(treeElement.textSegments)
               : ""
           } ${await theChildren(treeElement.children)}\n</div>`;
         })
@@ -177,11 +231,26 @@ async function printHTML(tree) {
     html = await createSVG(tree.originalNode, tree.name);
   } else {
     html += `<div class="${tree.name}">\n${
-      tree.characters ? tree.characters.replaceAll("\n", "<br />") : ""
+      tree.textSegments ? printTextSegments(tree.textSegments) : ""
     } ${await theChildren(tree.children)}\n</div>`;
   }
 
   return html;
+}
+
+function printTextSegments(segments) {
+  if (segments.length === 1) {
+    return segments[0].characters.replaceAll("\n", "<br/>");
+  }
+
+  return segments
+    .map((s) => {
+      return `<span class="${s.name}">${s.characters.replaceAll(
+        "\n",
+        "<br/>"
+      )}</span>`;
+    })
+    .join("");
 }
 
 function allChildrenAreVector(frame) {
