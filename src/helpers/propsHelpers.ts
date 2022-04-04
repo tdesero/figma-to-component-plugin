@@ -6,7 +6,7 @@ export function borderProp(node) {
 
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
     return `
-    border-width:  ${node.strokeWeight}px; 
+    border-width: ${node.strokeWeight}px; 
     border-style: solid; 
     border-image: ${strokeColor(node)}; 
     border-image-slice: 1;
@@ -56,7 +56,6 @@ export function displayProp(node) {
 
   let layoutProps = "";
   if (node.layoutMode === "VERTICAL") {
-    // position: ${["FRAME", "COMPONENT", "INSTANCE"].includes(node.type) ? 'relative' : 'static'}; /* dont get this... */
     layoutProps = `
         display: flex;
         position: relative;
@@ -266,7 +265,7 @@ export function fontStyleAsObject(fontName) {
   const weight = fontName?.style?.toLowerCase().replace("italic", "").trim();
 
   return {
-    weight: weightMap[weight],
+    weight: weightMap[weight] ? weightMap[weight] : "400",
     isItalic,
   };
 }
