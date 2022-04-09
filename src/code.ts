@@ -14,7 +14,7 @@ import {
   fontProp,
 } from "./helpers/propsHelpers";
 
-import { makeSafeForCSS } from "./helpers/helpers";
+import { escapeHtml, makeSafeForCSS } from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
 /* Beta */
@@ -240,15 +240,17 @@ async function printHTML(tree) {
 
 function printTextSegments(segments) {
   if (segments.length === 1) {
-    return segments[0].characters.replaceAll("\n", "<br/>");
+    // do not wrap in span
+    return escapeHtml(segments[0].characters)
+      .replace(/\u2028/g, "\n") // makes annoying L-SEP Linebreaks disappear
+      .replace(/\n/g, "<br/>");
   }
 
   return segments
     .map((s) => {
-      return `<span class="${s.name}">${s.characters.replaceAll(
-        "\n",
-        "<br/>"
-      )}</span>`;
+      return `<span class="${s.name}">${escapeHtml(s.characters)
+        .replace(/\u2028/g, "\n") // makes annoying L-SEP Linebreaks disappear
+        .replace(/\n/g, "<br/>")}</span>`;
     })
     .join("");
 }
