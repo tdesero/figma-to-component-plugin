@@ -58,7 +58,6 @@ export function displayProp(node) {
   if (node.layoutMode === "VERTICAL") {
     layoutProps = `
         display: flex;
-        position: relative;
         flex-direction: column;
         gap: ${node.itemSpacing}px;
         align-items: ${alignItemsMap[node.counterAxisAlignItems]};
@@ -69,7 +68,6 @@ export function displayProp(node) {
   if (node.layoutMode === "HORIZONTAL") {
     layoutProps = `
         display: flex;
-        position: relative;
         flex-direction: row;
         gap: ${node.itemSpacing}px;
         align-items: ${alignItemsMap[node.counterAxisAlignItems]};
@@ -200,10 +198,12 @@ export function position(node) {
   }
 
   const positionFromParent = (node) => {
+    const selection = figma.currentPage.selection[0];
+
     if (node.type === "GROUP") {
       return "static;";
     }
-    if (node.id === figma.currentPage.selection[0].id) {
+    if (node.id === selection.id || node.parent?.type === "COMPONENT_SET") {
       return "relative;";
     }
     return `${

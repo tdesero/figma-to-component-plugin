@@ -65,7 +65,7 @@ function createTree(selection) {
   let componentName = "component";
 
   // Only to prevent duplicate Names
-  const allNames = [];
+  let allNames = [];
 
   function uniqueName(className, n = 1) {
     const suffix = n > 1 ? n : "";
@@ -83,25 +83,33 @@ function createTree(selection) {
   }
 
   if (selection.length > 1) {
-    figma.notify("Select only 1 Component", { error: true });
+    figma.notify("Select only 1 Node", { error: true });
     return;
   }
 
-  const frame = <any>selection[0];
-  componentName = makeSafeForCSS(frame.name);
+  const selectionNode = <any>selection[0];
+
+  const isComponentSet = selectionNode.type === "COMPONENT_SET";
+  const originalNode = isComponentSet
+    ? selectionNode.defaultVariant
+    : selectionNode;
+
+  componentName = makeSafeForCSS(selectionNode.name);
+
   const tree = {
     name: componentName,
-    css: nodeCSS(frame),
-    allChildrenAreVector: allChildrenAreVector(frame),
+    css: nodeCSS(originalNode),
+    allChildrenAreVector: allChildrenAreVector(originalNode),
     children: [],
-    type: frame.type,
-    characters: frame.characters,
-    originalNode: frame,
+    type: originalNode.type,
+    characters: originalNode.characters,
+    originalNode: originalNode,
     textSegments: [],
+    variants: isComponentSet && [],
   };
 
-  function theChildren(children, treeChildren) {
-    children.forEach((node, i) => {
+  function theChildren(children, treeChildren, baseSelector = "") {
+    children.forEach((node) => {
       if (!node.visible) return;
       const name = `${componentName}__${uniqueName(makeSafeForCSS(node.name))}`;
 
@@ -114,12 +122,13 @@ function createTree(selection) {
         characters: node.characters,
         originalNode: node,
         textSegments: [],
+        baseSelector,
       };
 
       treeChildren?.push(newElement);
 
       if (node.children?.length > 0) {
-        theChildren(node.children, newElement.children);
+        theChildren(node.children, newElement.children, baseSelector);
       }
 
       if (node.type === "TEXT") {
@@ -129,12 +138,35 @@ function createTree(selection) {
     });
   }
 
-  if (frame.children?.length > 0) {
-    theChildren(frame.children, tree.children);
+  if (originalNode.children?.length > 0) {
+    theChildren(originalNode.children, tree.children);
+
+    /* Component Variants */
+    if (isComponentSet) {
+      selectionNode.children.forEach((variant) => {
+        const variantName = makeSafeForCSS(
+          `${componentName}--${variant?.name}`
+        );
+        const newVariant = {
+          name: componentName,
+          css: nodeCSS(variant),
+          allChildrenAreVector: allChildrenAreVector(variant),
+          children: [],
+          type: variant?.type,
+          characters: variant?.characters,
+          originalNode: variant,
+          textSegments: [],
+          baseSelector: "." + variantName,
+        };
+        tree.variants?.push(newVariant);
+        allNames = []; // reset classNames so the new generated match the ones in the defaultVariant
+        theChildren(variant.children, newVariant.children, "." + variantName);
+      });
+    }
   }
 
-  if (frame.type === "TEXT") {
-    const textSegments = getTextSegments(frame, tree.name, uniqueName);
+  if (originalNode.type === "TEXT") {
+    const textSegments = getTextSegments(originalNode, tree.name, uniqueName);
     tree.textSegments = textSegments;
   }
 
@@ -165,15 +197,59 @@ function getTextSegments(node, componentName, uniqueName) {
   });
 }
 
+function getTreeElementByName(tree, name) {
+  function searchTree(element, name) {
+    if (element.name === name) {
+      return element;
+    } else if (element.children != null) {
+      var i: number;
+      var result = null;
+      for (i = 0; result == null && i < element.children.length; i++) {
+        result = searchTree(element.children[i], name);
+      }
+      return result;
+    }
+    return null;
+  }
+
+  return searchTree(tree, name);
+}
+
+function eraseDuplicateCSS(modifierCSS: string, baseCSS: string) {
+  const modArr = modifierCSS.split(";");
+  const baseArr = baseCSS.split(";");
+
+  return modArr
+    .filter((line) => {
+      return !baseArr.includes(line);
+    })
+    .map((l) => l + ";")
+    .join("");
+}
+
 const tree = createTree(figma.currentPage.selection);
+console.log(tree);
 
 function printCSS(tree) {
   let css = "";
 
   css += `.${tree.name} {${tree.css}}\n`;
-  function theChildren(children) {
+  function theChildren(children, isVariant: boolean = false) {
     children.forEach((treeElement) => {
-      css += `.${treeElement.name} {${treeElement.css}}\n`;
+      let elementCSS = treeElement.css;
+      let className = "." + treeElement.name;
+
+      if (isVariant) {
+        const baseCSS = getTreeElementByName(tree, treeElement.name)?.css;
+        className =
+          tree.name === treeElement.name ? "" : "." + treeElement.name;
+        if (baseCSS) {
+          elementCSS = eraseDuplicateCSS(treeElement.css, baseCSS);
+          if (elementCSS === "") return;
+        }
+      }
+
+      css += `${treeElement.baseSelector || ""} ${className} {${elementCSS}}\n`;
       if (treeElement.allChildrenAreVector) {
         return;
       }
@@ -183,7 +259,7 @@ function printCSS(tree) {
         });
       }
       if (treeElement.children.length > 0) {
-        theChildren(treeElement.children);
+        theChildren(treeElement.children, isVariant);
       }
     });
   }
@@ -194,6 +270,11 @@ function printCSS(tree) {
   }
   if (!tree.allChildrenAreVector) {
     theChildren(tree.children);
+  }
+
+  if (tree.variants) {
+    css += "\n/* variant styles */\n";
+    theChildren(tree.variants, true);
   }
 
   return css;
