@@ -18,7 +18,7 @@ Download this Repo as zip. Unzip it and then import it inside Figma via "Plugins
 
 # Things you should know
 
-- Only uses <div> for the html
+- Only uses `<div>` for the html
 - Markup and class names are only as good as the figma structure (use autolayout as much as possible, check the layer naming)
 - Groups don’t really work (wrong positioning in many cases)
 - SVGs do not include variables
