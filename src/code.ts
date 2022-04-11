@@ -10,7 +10,6 @@ import {
   position,
   overflow,
   opacity,
-  strokeColor,
   fontProp,
 } from "./helpers/propsHelpers";
 
@@ -256,11 +255,15 @@ function printCSS(tree) {
           tree.name === treeElement.name ? "" : "." + treeElement.name;
         if (baseCSS) {
           elementCSS = eraseDuplicateCSS(treeElement.css, baseCSS);
-          if (elementCSS === "") return;
         }
       }
 
-      css += `${treeElement.baseSelector || ""} ${className} {${elementCSS}}\n`;
+      if (elementCSS !== "") {
+        css += `${
+          treeElement.baseSelector || ""
+        } ${className} {${elementCSS}}\n`;
+      }
+
       if (treeElement.allChildrenAreVector) {
         return;
       }
