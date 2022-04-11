@@ -40,39 +40,30 @@ export function displayProp(node) {
   const layoutAlign =
     node.layoutAlign === "STRETCH" ? "align-self: stretch;" : "";
 
-  const alignItemsMap = {
+  const alignmentMap = {
     MIN: "flex-start",
     MAX: "flex-end",
     CENTER: "center",
     SPACE_BETWEEN: "space-between",
   };
 
-  const justifyContentMap = {
-    MIN: "flex-start",
-    MAX: "flex-end",
-    CENTER: "center",
-    SPACE_BETWEEN: "space-between",
+  const flexProps = (direction) => {
+    return `
+      display: flex;
+      flex-direction: ${direction};
+      gap: ${node.itemSpacing}px;
+      align-items: ${alignmentMap[node.counterAxisAlignItems]};
+      justify-content: ${alignmentMap[node.primaryAxisAlignItems]};
+    `;
   };
 
   let layoutProps = "";
   if (node.layoutMode === "VERTICAL") {
-    layoutProps = `
-        display: flex;
-        flex-direction: column;
-        gap: ${node.itemSpacing}px;
-        align-items: ${alignItemsMap[node.counterAxisAlignItems]};
-        justify-content: ${justifyContentMap[node.primaryAxisAlignItems]};
-      `;
+    layoutProps = flexProps("column");
   }
 
   if (node.layoutMode === "HORIZONTAL") {
-    layoutProps = `
-        display: flex;
-        flex-direction: row;
-        gap: ${node.itemSpacing}px;
-        align-items: ${alignItemsMap[node.counterAxisAlignItems]};
-        justify-content: ${justifyContentMap[node.primaryAxisAlignItems]};
-      `;
+    layoutProps = flexProps("row");
   }
 
   if (
@@ -152,49 +143,66 @@ export function opacity(node) {
   return `opacity: ${node.opacity};`;
 }
 
-export function position(node) {
+function findAbsoluteParent(node) {
+  if (node.parent.type === "GROUP") {
+    return findAbsoluteParent(node.parent);
+  }
+  return node.parent;
+}
+
+function cssFromConstraints(node) {
   let coord = "";
 
-  function findAbsoluteParent(node) {
-    if (node.parent.type === "GROUP") {
-      return findAbsoluteParent(node.parent);
-    }
-    return node.parent;
-  }
-
-  if (node.id !== figma.currentPage.selection[0].id) {
-    // Super ugly but works for now...
-    if (node.constraints?.horizontal === "MAX") {
+  switch (node.constraints?.horizontal) {
+    case "MAX":
       coord += `right: ${
         findAbsoluteParent(node).width - node.width - node.x
       }px;`;
-    } else if (node.constraints?.horizontal === "STRETCH") {
+      break;
+    case "STRETCH":
       coord += `right: ${
         findAbsoluteParent(node).width - node.width - node.x
       }px; left: ${node.x}px;`;
-    } else if (node.constraints?.horizontal === "CENTER") {
+      break;
+    case "CENTER":
       coord += `left: calc(50% - ${
         findAbsoluteParent(node).width / 2 - node.x
       }px);`;
-    } else {
+      break;
+    default:
       coord += `left: ${node.x}px;`;
-    }
+  }
 
-    if (node.constraints?.vertical === "MAX") {
+  switch (node.constraints?.vertical) {
+    case "MAX":
       coord += `bottom: ${
         findAbsoluteParent(node).height - node.height - node.y
       }px;`;
-    } else if (node.constraints?.vertical === "STRETCH") {
+      break;
+    case "STRETCH":
       coord += `bottom: ${
         findAbsoluteParent(node).height - node.height - node.y
       }px; top: ${node.y}px;`;
-    } else if (node.constraints?.vertical === "CENTER") {
+      break;
+    case "CENTER":
       coord += `top: calc(50% - ${
         findAbsoluteParent(node).height / 2 - node.y
       }px);`;
-    } else {
+      break;
+    default:
       coord += `top: ${node.y}px;`;
-    }
+  }
+
+  return coord;
+}
+
+export function position(node) {
+  let coord = "";
+
+  if (node.id !== figma.currentPage.selection[0].id) {
+    // Super ugly but works for now...
+
+    coord = cssFromConstraints(node);
   }
 
   const positionFromParent = (node) => {
@@ -323,11 +331,7 @@ export function strokeColor(node) {
 }
 
 export function getColor(fillOrColor, styleId) {
-  if (!fillOrColor) {
-    return "transparent";
-  }
-
-  if (!fillOrColor.visible) {
+  if (!fillOrColor || !fillOrColor.visible) {
     return "transparent";
   }
 
