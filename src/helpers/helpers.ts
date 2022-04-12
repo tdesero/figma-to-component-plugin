@@ -68,6 +68,22 @@ export function cleanStyleName(name) {
   return makeSafeForCSS(name.replaceAll(" ", ""));
 }
 
+export function allChildrenAreVector(node) {
+  return (
+    node.children?.length > 0 &&
+    node.children?.filter((n) => n.type === "VECTOR").length ===
+      node.children?.length
+  );
+}
+
+export function willBeRenderedAsSVG(node) {
+  return (
+    allChildrenAreVector(node) ||
+    node.type === "VECTOR" ||
+    node.type === "BOOLEAN_OPERATION"
+  );
+}
+
 /**
  * Returns all relevant transformation information from a (figma) transform matrix
  */

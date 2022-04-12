@@ -1,7 +1,13 @@
-import { rgbToHex, rgbaColor, getTransforms, cleanStyleName } from "./helpers";
+import {
+  rgbToHex,
+  rgbaColor,
+  getTransforms,
+  cleanStyleName,
+  willBeRenderedAsSVG,
+} from "./helpers";
 
 export function borderProp(node) {
-  if (node.type === "VECTOR") return "";
+  if (willBeRenderedAsSVG(node)) return "";
   if (!node.strokes || !node.strokeWeight || node.strokes.length < 1) return "";
 
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
@@ -208,7 +214,7 @@ export function position(node) {
   const positionFromParent = (node) => {
     const selection = figma.currentPage.selection[0];
 
-    if (node.type === "GROUP") {
+    if (node.type === "GROUP" && !willBeRenderedAsSVG(node)) {
       return "static;";
     }
     if (node.id === selection.id || node.parent?.type === "COMPONENT_SET") {
@@ -227,7 +233,8 @@ export function position(node) {
 }
 
 export function boxShadow(node) {
-  if (!node.effects || node.effects.length === 0) return "";
+  if (!node.effects || node.effects.length === 0 || willBeRenderedAsSVG(node))
+    return "";
   const shadows = node.effects.filter(
     (effect) => effect.type === "DROP_SHADOW"
   );
@@ -279,7 +286,7 @@ export function fontStyleAsObject(fontName) {
 }
 
 export function fillColor(node) {
-  if (node.type === "VECTOR" || node.type === "BOOLEAN_OPERATION") return "";
+  if (willBeRenderedAsSVG(node)) return "";
   //atm only one fill is supported
   const fill = node.fills?.[0];
 
@@ -287,14 +294,14 @@ export function fillColor(node) {
 }
 
 export function transforms(node) {
-  if (node.rotation && node.type !== "GROUP") {
-    return `
-        transform-origin: 0 0;
-        transform: rotate(${node.rotation * -1}deg);
-      `;
-  } else {
+  if (willBeRenderedAsSVG(node) || node.type !== "GROUP" || !node.rotation) {
     return "";
   }
+
+  return `
+    transform-origin: 0 0;
+    transform: rotate(${node.rotation * -1}deg);
+  `;
 }
 
 export function gradientLinear(fill) {

@@ -13,7 +13,11 @@ import {
   fontProp,
 } from "./helpers/propsHelpers";
 
-import { escapeHtml, makeSafeForCSS } from "./helpers/helpers";
+import {
+  escapeHtml,
+  makeSafeForCSS,
+  allChildrenAreVector,
+} from "./helpers/helpers";
 import { getStyles } from "./getStyles";
 
 /* Beta */
@@ -322,7 +326,11 @@ async function printHTML(tree) {
   }
 
   // this should become more DRY...
-  if (tree.type === "VECTOR" || tree.allChildrenAreVector) {
+  if (
+    tree.type === "VECTOR" ||
+    tree.type === "BOOLEAN_OPERATION" ||
+    tree.allChildrenAreVector
+  ) {
     html = await createSVG(tree.originalNode, tree.name);
   } else {
     html += `<div class="${tree.name}">\n${
@@ -348,14 +356,6 @@ function printTextSegments(segments) {
         .replace(/\n/g, "<br/>")}</span>`;
     })
     .join("");
-}
-
-function allChildrenAreVector(frame) {
-  return (
-    frame.children?.length > 0 &&
-    frame.children?.filter((n) => n.type === "VECTOR").length ===
-      frame.children?.length
-  );
 }
 
 export async function createSVG(node, className) {
