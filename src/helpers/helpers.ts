@@ -69,9 +69,10 @@ export function cleanStyleName(name) {
 }
 
 export function allChildrenAreVector(node) {
+  const vectorTypes = ["VECTOR", "BOOLEAN_OPERATION"];
   return (
     node.children?.length > 0 &&
-    node.children?.filter((n) => n.type === "VECTOR").length ===
+    node.children?.filter((n) => vectorTypes.includes(n.type)).length ===
       node.children?.length
   );
 }
