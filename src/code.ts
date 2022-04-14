@@ -11,6 +11,8 @@ import {
   overflow,
   opacity,
   fontProp,
+  textTransformProp,
+  textDecorationProp,
 } from "./helpers/propsHelpers";
 
 import {
@@ -31,6 +33,8 @@ function nodeCSS(node) {
       color: ${fillColor(node)};
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
       ${fontProp(node)}
+      ${textTransformProp(node)}
+      ${textDecorationProp(node)}
       ${opacity(node)}
       ${position(node)}
       ${displayProp(node)}
@@ -61,6 +65,8 @@ function segmentCss(textSegment) {
   return `
       color: ${fillColor(textSegment)};
       ${fontProp(textSegment)}
+      ${textTransformProp(textSegment)}
+      ${textDecorationProp(textSegment)}
     `;
 }
 

@@ -83,6 +83,11 @@ export function displayProp(node) {
 }
 
 export function dimensions(node) {
+  // in this case the dimensions are defined inside the svg
+  if (willBeRenderedAsSVG(node)) {
+    return "";
+  }
+
   /* NOTE: The Order of these if statements is important! */
 
   let height = "";
@@ -138,8 +143,7 @@ export function dimensions(node) {
 }
 
 export function overflow(node) {
-  if (node.type === "VECTOR" || node.type === "BOOLEAN_OPERATION")
-    return "overflow: visible;";
+  if (willBeRenderedAsSVG(node)) return "overflow: visible;";
 
   return node.clipsContent ? "overflow: hidden;" : "";
 }
@@ -233,7 +237,12 @@ export function position(node) {
 }
 
 export function boxShadow(node) {
-  if (!node.effects || node.effects.length === 0 || willBeRenderedAsSVG(node))
+  if (
+    !node.effects ||
+    node.effects.length === 0 ||
+    willBeRenderedAsSVG(node) ||
+    node.type === "GROUP"
+  )
     return "";
   const shadows = node.effects.filter(
     (effect) => effect.type === "DROP_SHADOW"
@@ -294,13 +303,42 @@ export function fillColor(node) {
 }
 
 export function transforms(node) {
-  if (willBeRenderedAsSVG(node) || node.type !== "GROUP" || !node.rotation) {
+  const isSVG = willBeRenderedAsSVG(node);
+
+  if (node.type === "GROUP" && !isSVG) {
     return "";
+  }
+
+  const transforms = getTransforms(node.relativeTransform);
+
+  const absoluteTransforms = getTransforms(node.absoluteTransform);
+
+  if (
+    transforms.angle === 0 &&
+    transforms.scaleX === 1 &&
+    transforms.scaleY === 1
+  ) {
+    return "";
+  }
+
+  // TODO: check if it is rendered inside an autolayout & fix transform origin...
+
+  if (isSVG) {
+    if (!node.absoluteRenderBounds) return;
+    return `
+      transform: translate(${
+        (absoluteTransforms.translateX - node.absoluteRenderBounds.x) * -1
+      }px, ${
+      (absoluteTransforms.translateY - node.absoluteRenderBounds.y) * -1
+    }px);
+    `;
   }
 
   return `
     transform-origin: 0 0;
-    transform: rotate(${node.rotation * -1}deg);
+    transform: rotate(${transforms.angle * -1}deg) scale(${
+    transforms.scaleX
+  }, ${transforms.scaleY});
   `;
 }
 
@@ -412,4 +450,28 @@ export function fontProp(node) {
   }
 
   return `font: ${shorthand};`;
+}
+
+export function textTransformProp(node) {
+  const caseMap = {
+    UPPER: "uppercase",
+    LOWER: "lowercase",
+  };
+
+  return caseMap[node.textCase]
+    ? `text-transform: ${caseMap[node.textCase]};`
+    : "";
+}
+
+export function textDecorationProp(node) {
+  if (!node.textDecoration) return "";
+
+  const decoMap = {
+    STRIKETHROUGH: "line-through",
+    UNDERLINE: "underline",
+  };
+
+  return decoMap[node.textDecoration]
+    ? `text-decoration: ${decoMap[node.textDecoration]};`
+    : "";
 }
