@@ -79,14 +79,14 @@ export const CodePreview = ({ codeString, language }) => {
   return (
     <div className="code-preview">
       <Button
-        style={{ position: "absolute", right: 0, top: 0, margin: 16 }}
+        style={{ position: "fixed", left: 0, bottom: 0, margin: 16 }}
         onClick={() => {
           copyToClipboard(formattedCode);
         }}
       >
         Copy
       </Button>
-      <SyntaxHighlighter language={syntaxLang[language]} style={vs2015}>
+      <SyntaxHighlighter language={syntaxLang[language]} style={vs2015} customStyle={{padding: 16, paddingBottom: 64}}>
         {formattedCode}
       </SyntaxHighlighter>
     </div>

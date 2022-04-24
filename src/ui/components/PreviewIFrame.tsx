@@ -14,7 +14,7 @@ export function PreviewIFrame({ html, title, ...props }) {
   }
 
   function InnerHtml({ html }) {
-    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    return <div style={{padding: 16, textAlign: 'center'}} dangerouslySetInnerHTML={{ __html: html }} />;
   }
 
   return (

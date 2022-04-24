@@ -8,6 +8,7 @@ import "./styles.css";
 import { useState } from "react";
 import { PreviewIFrame } from "./components/PreviewIFrame";
 import { CodePreview } from "./components/CodePreview";
+import { toPascalCase } from "./helpers/toPascalCase";
 
 var beautify = require('js-beautify');
 
@@ -19,20 +20,6 @@ import {
   testReact,
   testVars
 } from "./test-code";
-
- /* helpers */
- function toPascalCase(string) {
-  return `${string}`
-    .replace(new RegExp(/[-_]+/, "g"), " ")
-    .replace(new RegExp(/[^\w\s]/, "g"), "")
-    .replace(
-      new RegExp(/\s+(.)(\w*)/, "g"),
-      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
-    )
-    .replace(new RegExp(/\w/), (s) => s.toUpperCase());
-}
-/* helpers end */
-
 
 export default function App() {
   const [selectedTab, setSelectedTab] = useState("preview");

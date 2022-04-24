@@ -393,7 +393,7 @@ figma.parameters.on(
 );
 
 figma.on("run", async ({ command, parameters }: RunEvent) => {
-  figma.showUI(__html__, { height: 500, width: 400 });
+  figma.showUI(__html__, { height: 600, width: 500 });
 
   const css = parameters.framework === "tailwind(beta)" ? "-" : printCSS(tree);
   const html =
