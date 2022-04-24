@@ -1,0 +1,36 @@
+.button {
+  box-sizing: border-box;
+  background: var(--figma-primary, #18a0fb);
+  border-radius: 6px;
+  padding: 8px 16px 8px 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  position: relative;
+  margin: 0;
+  border: none;
+}
+
+.button__title {
+  color: var(--white, #ffffff);
+  text-align: center;
+  font: var(--pos-ui11medium, 500 11px/16px "Inter");
+  position: relative;
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+/* variant styles */
+.button--outline {
+  background: #ffffff;
+  border: 1px solid var(--black8, rgba(0, 0, 0, 0.8));
+}
+
+.button--outline .button__title {
+  color: var(--black8, rgba(0, 0, 0, 0.8));
+}

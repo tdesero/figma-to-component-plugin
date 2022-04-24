@@ -1,0 +1,11 @@
+.code-preview {
+  height: 100%;
+  overflow: auto;
+  min-height: 200px;
+  position: relative;
+}
+
+.code-preview pre {
+  height: 100%;
+  box-sizing: border-box;
+}

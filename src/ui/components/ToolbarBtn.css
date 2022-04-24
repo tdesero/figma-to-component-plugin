@@ -1,0 +1,44 @@
+.toolbar-btn {
+  box-sizing: border-box;
+  background: transparent;
+  padding: 12px 16px 12px 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: auto;
+  height: auto;
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+}
+
+.toolbar-btn__icon {
+  box-sizing: border-box;
+  background: transparent;
+  width: 16px;
+  height: 16px;
+  position: relative;
+  margin: 0;
+}
+
+.toolbar-btn__preview {
+  color: var(--white, #ffffff);
+  text-align: left;
+  font: var(--pos-ui11medium, 500 11px/16px "Inter");
+  position: relative;
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+/* variant styles */
+.toolbar-btn--selected {
+  background: var(--figma-primary, #18a0fb);
+}
+
+.toolbar-btn:not(.toolbar-btn--selected):hover {
+  background: #000000;
+}
