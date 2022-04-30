@@ -67,7 +67,8 @@ export function cleanStyleName(name) {
   return makeSafeForCSS(name.replaceAll(" ", ""));
 }
 
-export function cleanNumber(n) {
+export function cleanNumber(n): Number {
+  if (!n) return 0;
   return parseFloat(n.toFixed(2));
 }
 
