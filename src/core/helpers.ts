@@ -1,4 +1,3 @@
-/* helpers */
 export function componentToHex(c): String {
   var hex = Math.round(c * 255).toString(16);
   return hex.length == 1 ? "0" + hex : hex;
@@ -66,6 +65,11 @@ export function cleanStyleName(name) {
   if (!name) return;
 
   return makeSafeForCSS(name.replaceAll(" ", ""));
+}
+
+export function cleanNumber(n): Number {
+  if (!n) return 0;
+  return parseFloat(n.toFixed(2));
 }
 
 export function allChildrenAreVector(node) {
