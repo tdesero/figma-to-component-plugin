@@ -13,17 +13,17 @@ import {
   fontProp,
   textTransformProp,
   textDecorationProp,
-} from "./helpers/propsHelpers";
+} from "./core/cssProperties";
 
 import {
   escapeHtml,
   makeSafeForCSS,
   allChildrenAreVector,
-} from "./helpers/helpers";
-import { getStyles } from "./getStyles";
+} from "./core/helpers";
+import { getStyles } from "./core/getStyles";
 
 /* Beta */
-import { tailwind } from "./tailwind";
+import { tailwind } from "./core/tailwind";
 
 function nodeCSS(node) {
   console.log("node", node);

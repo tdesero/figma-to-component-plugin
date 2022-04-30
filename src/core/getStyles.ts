@@ -1,10 +1,10 @@
-import { cleanStyleName } from "./helpers/helpers";
+import { cleanStyleName } from "./helpers";
 import {
   fontStyleAsObject,
   lineHeight,
   fontShorthand,
   getColor,
-} from "./helpers/propsHelpers";
+} from "./cssProperties";
 
 export function getStyles(figma) {
   const paintStyles = figma.getLocalPaintStyles()?.map(({ name, paints }) => {

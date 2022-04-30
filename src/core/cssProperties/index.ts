@@ -4,7 +4,8 @@ import {
   getTransforms,
   cleanStyleName,
   willBeRenderedAsSVG,
-} from "./helpers";
+  cleanNumber,
+} from "../helpers";
 
 export function borderProp(node) {
   if (willBeRenderedAsSVG(node)) return "";
@@ -12,14 +13,16 @@ export function borderProp(node) {
 
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
     return `
-    border-width: ${node.strokeWeight}px; 
+    border-width: ${cleanNumber(node.strokeWeight)}px; 
     border-style: solid; 
     border-image: ${strokeColor(node)}; 
     border-image-slice: 1;
     `;
   }
 
-  return `border: ${node.strokeWeight}px solid ${strokeColor(node)};`;
+  return `border: ${cleanNumber(node.strokeWeight)}px solid ${strokeColor(
+    node
+  )};`;
 }
 
 export function paddingProp(node) {
@@ -31,7 +34,11 @@ export function paddingProp(node) {
   )
     return "";
 
-  return `padding: ${node.paddingTop}px ${node.paddingRight}px ${node.paddingBottom}px ${node.paddingLeft}px;`;
+  return `padding: ${cleanNumber(node.paddingTop)}px ${cleanNumber(
+    node.paddingRight
+  )}px ${cleanNumber(node.paddingBottom)}px ${cleanNumber(
+    node.paddingLeft
+  )}px;`;
 }
 
 export function displayProp(node) {
@@ -57,7 +64,7 @@ export function displayProp(node) {
     return `
       display: flex;
       flex-direction: ${direction};
-      gap: ${node.itemSpacing}px;
+      gap: ${cleanNumber(node.itemSpacing)}px;
       align-items: ${alignmentMap[node.counterAxisAlignItems]};
       justify-content: ${alignmentMap[node.primaryAxisAlignItems]};
     `;
@@ -95,28 +102,38 @@ export function dimensions(node) {
 
   if (node.layoutMode === "VERTICAL") {
     height =
-      node.primaryAxisSizingMode === "AUTO" ? "auto" : node.height + "px";
-    width = node.counterAxisSizingMode === "AUTO" ? "auto" : node.width + "px";
+      node.primaryAxisSizingMode === "AUTO"
+        ? "auto"
+        : cleanNumber(node.height) + "px";
+    width =
+      node.counterAxisSizingMode === "AUTO"
+        ? "auto"
+        : cleanNumber(node.width) + "px";
   }
 
   if (node.layoutMode === "HORIZONTAL") {
-    width = node.primaryAxisSizingMode === "AUTO" ? "auto" : node.width + "px";
+    width =
+      node.primaryAxisSizingMode === "AUTO"
+        ? "auto"
+        : cleanNumber(node.width) + "px";
     height =
-      node.counterAxisSizingMode === "AUTO" ? "auto" : node.height + "px";
+      node.counterAxisSizingMode === "AUTO"
+        ? "auto"
+        : cleanNumber(node.height) + "px";
   }
 
   if (!node.layoutMode || node.layoutMode === "NONE") {
     height = node.textAutoResize?.toString().includes("HEIGHT")
       ? "auto"
-      : node.height + "px";
+      : cleanNumber(node.height) + "px";
     width = node.textAutoResize?.toString().includes("WIDTH")
       ? "auto"
-      : node.width + "px";
+      : cleanNumber(node.width) + "px";
   }
 
   if ((!node.children || node.children?.length === 0) && node.type !== "TEXT") {
-    height = node.height + "px";
-    width = node.width + "px";
+    height = cleanNumber(node.height) + "px";
+    width = cleanNumber(node.width) + "px";
   }
 
   if (
@@ -165,42 +182,42 @@ function cssFromConstraints(node) {
 
   switch (node.constraints?.horizontal) {
     case "MAX":
-      coord += `right: ${
+      coord += `right: ${cleanNumber(
         findAbsoluteParent(node).width - node.width - node.x
-      }px;`;
+      )}px;`;
       break;
     case "STRETCH":
-      coord += `right: ${
+      coord += `right: ${cleanNumber(
         findAbsoluteParent(node).width - node.width - node.x
-      }px; left: ${node.x}px;`;
+      )}px; left: ${node.x}px;`;
       break;
     case "CENTER":
-      coord += `left: calc(50% - ${
+      coord += `left: calc(50% - ${cleanNumber(
         findAbsoluteParent(node).width / 2 - node.x
-      }px);`;
+      )}px);`;
       break;
     default:
-      coord += `left: ${node.x}px;`;
+      coord += `left: ${cleanNumber(node.x)}px;`;
   }
 
   switch (node.constraints?.vertical) {
     case "MAX":
-      coord += `bottom: ${
+      coord += `bottom: ${cleanNumber(
         findAbsoluteParent(node).height - node.height - node.y
-      }px;`;
+      )}px;`;
       break;
     case "STRETCH":
-      coord += `bottom: ${
+      coord += `bottom: ${cleanNumber(
         findAbsoluteParent(node).height - node.height - node.y
-      }px; top: ${node.y}px;`;
+      )}px; top: ${node.y}px;`;
       break;
     case "CENTER":
-      coord += `top: calc(50% - ${
+      coord += `top: calc(50% - ${cleanNumber(
         findAbsoluteParent(node).height / 2 - node.y
-      }px);`;
+      )}px);`;
       break;
     default:
-      coord += `top: ${node.y}px;`;
+      coord += `top: ${cleanNumber(node.y)}px;`;
   }
 
   return coord;
@@ -252,9 +269,12 @@ export function boxShadow(node) {
   let css = "box-shadow: ";
   css += shadows
     .map((s) => {
-      return `${s.offset.x}px ${s.offset.y}px ${s.radius}px ${
-        s.spread
-      }px ${rgbaColor(s.color, s.color.a)}`;
+      return `${cleanNumber(s.offset.x)}px ${cleanNumber(
+        s.offset.y
+      )}px ${cleanNumber(s.radius)}px ${cleanNumber(s.spread)}px ${rgbaColor(
+        s.color,
+        s.color.a
+      )}`;
     })
     .join(", ");
   return (
@@ -326,11 +346,11 @@ export function transforms(node) {
   if (isSVG) {
     if (!node.absoluteRenderBounds) return;
     return `
-      transform: translate(${
+      transform: translate(${cleanNumber(
         (absoluteTransforms.translateX - node.absoluteRenderBounds.x) * -1
-      }px, ${
+      )}px, ${cleanNumber(
       (absoluteTransforms.translateY - node.absoluteRenderBounds.y) * -1
-    }px);
+    )}px);
     `;
   }
 
@@ -364,8 +384,12 @@ export function borderRadius(node) {
 
   return `border-radius: ${
     typeof node.cornerRadius === "number"
-      ? node.cornerRadius + "px"
-      : `${node.topLeftRadius}px ${node.topRightRadius}px ${node.bottomRightRadius}px ${node.bottomLeftRadius}px`
+      ? cleanNumber(node.cornerRadius) + "px"
+      : `${cleanNumber(node.topLeftRadius)}px ${cleanNumber(
+          node.topRightRadius
+        )}px ${cleanNumber(node.bottomRightRadius)}px ${cleanNumber(
+          node.bottomLeftRadius
+        )}px`
   };`;
 }
 
@@ -410,7 +434,7 @@ export function lineHeight(nodeOrStyle) {
   };
 
   const unit = unitMap[nodeOrStyle.lineHeight.unit];
-  return `${nodeOrStyle.lineHeight.value}${unit}`;
+  return `${cleanNumber(nodeOrStyle.lineHeight.value)}${unit}`;
 }
 
 export function fontShorthand({
@@ -421,7 +445,7 @@ export function fontShorthand({
   isItalic,
 }) {
   const italic = isItalic ? "italic " : "";
-  return `${weight} ${italic}${fontSize}px${
+  return `${weight} ${italic}${cleanNumber(fontSize)}px${
     lineHeight !== "" ? "/" + lineHeight : ""
   } '${fontFamily}'`;
 }
@@ -429,7 +453,7 @@ export function fontShorthand({
 export function fontProp(node) {
   const { weight, isItalic } = fontStyleAsObject(node.fontName);
 
-  const fontSize = node.fontSize?.toString();
+  const fontSize = Number(node.fontSize?.toString()); // toString is needed to convert Symbols into string first (i think)
   const fontFamily = node.fontName.family?.toString();
   const lineHeightStr = lineHeight(node);
 
