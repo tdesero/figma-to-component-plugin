@@ -1,0 +1,15 @@
+.toolbar {
+  box-sizing: border-box;
+  background: var(--background-toolbar, #2c2c2c);
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  position: relative;
+  margin: 0;
+}
