@@ -2,17 +2,19 @@ import {
   borderProp,
   displayProp,
   paddingProp,
-  transforms,
-  borderRadius,
+  transformProps,
+  borderRadiusProp,
   fillColor,
-  boxShadow,
+  boxShadowProp,
   dimensions,
-  position,
-  overflow,
-  opacity,
+  positionProps,
+  overflowProp,
+  opacityProp,
   fontProp,
   textTransformProp,
   textDecorationProp,
+  backgroundProp,
+  colorProp,
 } from "./core/cssProperties";
 
 import {
@@ -30,33 +32,33 @@ function nodeCSS(node) {
 
   if (node.type?.toString() === "TEXT") {
     return `
-      color: ${fillColor(node)};
+      ${colorProp(node)}
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
       ${fontProp(node)}
       ${textTransformProp(node)}
       ${textDecorationProp(node)}
-      ${opacity(node)}
-      ${position(node)}
+      ${opacityProp(node)}
+      ${positionProps(node)}
       ${displayProp(node)}
       ${dimensions(node)}
       margin: 0;
-      ${transforms(node)}
+      ${transformProps(node)}
     `;
   } else {
     return `
       box-sizing: border-box;
-      background: ${fillColor(node)};
-      ${borderRadius(node)}
+      ${backgroundProp(node)}
+      ${borderRadiusProp(node)}
       ${borderProp(node)}
-      ${opacity(node)}
+      ${opacityProp(node)}
       ${paddingProp(node)}
       ${displayProp(node)}
       ${dimensions(node)}
-      ${position(node)}
-      ${boxShadow(node)}
+      ${positionProps(node)}
+      ${boxShadowProp(node)}
       margin: 0;
-      ${transforms(node)}
-      ${overflow(node)}
+      ${transformProps(node)}
+      ${overflowProp(node)}
     `;
   }
 }
@@ -247,9 +249,6 @@ function eraseDuplicateCSS(modifierCSS: string, baseCSS: string) {
     .join("");
 }
 
-const tree = createTree(figma.currentPage.selection);
-console.log(tree);
-
 function printCSS(tree) {
   let css = "";
 
@@ -393,6 +392,9 @@ figma.parameters.on(
 );
 
 figma.on("run", async ({ command, parameters }: RunEvent) => {
+  const tree = createTree(figma.currentPage.selection);
+  console.log(tree);
+
   figma.showUI(__html__, { height: 600, width: 500 });
 
   const css = parameters.framework === "tailwind(beta)" ? "-" : printCSS(tree);
