@@ -21,6 +21,7 @@ import {
   escapeHtml,
   makeSafeForCSS,
   allChildrenAreVector,
+  willBeRenderedAsSVG,
 } from "./core/helpers";
 import { getStyles } from "./core/getStyles";
 
@@ -310,11 +311,7 @@ async function printHTML(tree) {
     if (children?.length > 0) {
       const all = await Promise.all(
         children.map(async (treeElement) => {
-          if (
-            treeElement.type === "VECTOR" ||
-            treeElement.type === "BOOLEAN_OPERATION" ||
-            treeElement.allChildrenAreVector
-          ) {
+          if (willBeRenderedAsSVG(treeElement)) {
             return await createSVG(treeElement.originalNode, treeElement.name);
           }
           return `<div class="${treeElement.name}">\n${
@@ -331,11 +328,7 @@ async function printHTML(tree) {
   }
 
   // this should become more DRY...
-  if (
-    tree.type === "VECTOR" ||
-    tree.type === "BOOLEAN_OPERATION" ||
-    tree.allChildrenAreVector
-  ) {
+  if (willBeRenderedAsSVG(tree)) {
     html = await createSVG(tree.originalNode, tree.name);
   } else {
     html += `<div class="${tree.name}">\n${

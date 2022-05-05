@@ -73,7 +73,7 @@ export function cleanNumber(n): Number {
 }
 
 export function allChildrenAreVector(node) {
-  const vectorTypes = ["VECTOR", "BOOLEAN_OPERATION"];
+  const vectorTypes = ["VECTOR", "BOOLEAN_OPERATION", "STAR"];
   return (
     node.children?.length > 0 &&
     node.children?.filter((n) => vectorTypes.includes(n.type)).length ===
@@ -81,11 +81,12 @@ export function allChildrenAreVector(node) {
   );
 }
 
-export function willBeRenderedAsSVG(node) {
+export function willBeRenderedAsSVG(nodeOrTreeElement) {
   return (
-    allChildrenAreVector(node) ||
-    node.type === "VECTOR" ||
-    node.type === "BOOLEAN_OPERATION"
+    allChildrenAreVector(nodeOrTreeElement) ||
+    nodeOrTreeElement.type === "VECTOR" ||
+    nodeOrTreeElement.type === "BOOLEAN_OPERATION" ||
+    nodeOrTreeElement.type === "STAR"
   );
 }
 

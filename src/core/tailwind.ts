@@ -5,6 +5,7 @@ This will never work perfectly but may provide a starting point for development.
 */
 
 import { createSVG } from "../code";
+import { willBeRenderedAsSVG } from "./helpers";
 
 const sizesMap = {
   "0px": 0,
@@ -70,11 +71,7 @@ export async function tailwind(tree) {
     if (children?.length > 0) {
       const all = await Promise.all(
         children.map(async (treeElement) => {
-          if (
-            treeElement.type === "VECTOR" ||
-            treeElement.type === "BOOLEAN_OPERATION" ||
-            treeElement.allChildrenAreVector
-          ) {
+          if (willBeRenderedAsSVG(treeElement)) {
             return await createSVG(
               treeElement.originalNode,
               // hacky...
@@ -107,7 +104,7 @@ export async function tailwind(tree) {
   }
 
   // this should become more DRY...
-  if (tree.type === "VECTOR" || tree.allChildrenAreVector) {
+  if (willBeRenderedAsSVG(tree)) {
     html = await createSVG(
       tree.originalNode,
       `${tailwindClassNames(tree.css, tree.originalNode).classNames}" style="${
