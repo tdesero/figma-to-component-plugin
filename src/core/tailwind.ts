@@ -61,6 +61,7 @@ const twMap = {
   },
   overflow: {
     hidden: "hidden",
+    visible: "visible",
   },
 };
 
