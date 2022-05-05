@@ -204,7 +204,8 @@ function lookUpTailwindValue(propKey, value) {
   }
 
   if (twValue === undefined) {
-    return `[${value}]`;
+    // return fallback and remove whitespace as this is added directly to classname
+    return `[${value.replace(/\s/g, "")}]`;
   }
 
   if (twValue === "") {
