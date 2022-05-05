@@ -33,9 +33,13 @@ function transformProps(node) {
 
   return `
     transform-origin: 0 0;
-    transform: rotate(${transforms.angle * -1}deg) scale(${
-    transforms.scaleX
-  }, ${transforms.scaleY});
+    transform: rotate(${cleanNumber(
+      transforms.angle * -1,
+      3
+    )}deg) scale(${cleanNumber(transforms.scaleX, 3)}, ${cleanNumber(
+    transforms.scaleY,
+    3
+  )});
   `;
 }
 

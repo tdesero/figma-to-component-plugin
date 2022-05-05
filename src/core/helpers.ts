@@ -67,9 +67,9 @@ export function cleanStyleName(name) {
   return makeSafeForCSS(name.replaceAll(" ", ""));
 }
 
-export function cleanNumber(n): Number {
+export function cleanNumber(n, toFixed = 2): Number {
   if (!n) return 0;
-  return parseFloat(n.toFixed(2));
+  return parseFloat(n.toFixed(toFixed));
 }
 
 export function allChildrenAreVector(node) {
