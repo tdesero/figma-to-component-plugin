@@ -20,6 +20,7 @@ import {
   testReact,
   testVars
 } from "./test-code";
+import { TailwindIFrame } from "./components/TailwindIFrame";
 
 export default function App() {
   const [selectedTab, setSelectedTab] = useState("preview");
@@ -28,6 +29,7 @@ export default function App() {
   const [css, setCss] = useState('');
   const [vars, setVars] = useState('');
   const [codeLanguage, setCodeLanguage] = useState('html');
+  const [framework, setFramework] = useState();
 
 
   window.onmessage = (event) => {
@@ -57,7 +59,7 @@ export default function App() {
   
     var preview =
       framework === "tailwind(beta)"
-        ? "No preview possible"
+        ? html
         : html + "<style>" + css + "</style>";
   
     const frameworkCode = (framework) => {
@@ -81,6 +83,7 @@ export default function App() {
     setCss(css.replaceAll('\n \n', '\n'));
     setCode(frameworkCode(framework));
     setVars(variables);
+    setFramework(framework);
 
     const languages = {
       react: 'javascript',
@@ -128,7 +131,9 @@ export default function App() {
         />
       </Toolbar>
       {selectedTab === "preview" && (
-        <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>
+        framework === 'tailwind(beta)' 
+        ? <TailwindIFrame html={preview} />
+        : <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>
       )}
       {selectedTab === "code" && (
         <CodePreview language={codeLanguage} codeString={code} />
