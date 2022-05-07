@@ -311,9 +311,6 @@ function printCSS(tree) {
         } ${className} {${elementCSS}}\n`;
       }
 
-      if (treeElement.allChildrenAreVector) {
-        return;
-      }
       if (treeElement.textSegments.length > 1) {
         treeElement.textSegments.forEach((s) => {
           css += `.${s.name} {${s.css}}\n`;
