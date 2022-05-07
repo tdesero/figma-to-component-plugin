@@ -20,7 +20,6 @@ import {
 import {
   escapeHtml,
   makeSafeForCSS,
-  allChildrenAreVector,
   willBeRenderedAsSVG,
 } from "./core/helpers";
 import { getStyles } from "./core/getStyles";
@@ -88,7 +87,7 @@ function createTree(selection) {
   const tree = {
     name: componentName,
     css: nodeCSS(originalNode),
-    allChildrenAreVector: allChildrenAreVector(originalNode),
+    willBeRenderedAsSVG: willBeRenderedAsSVG(originalNode),
     children: [],
     type: originalNode.type,
     characters: originalNode.characters,
@@ -110,7 +109,10 @@ function createTree(selection) {
           "shortName",
           className + suffix
         );
-        if (elementWithSameName?.css === css) {
+        if (
+          elementWithSameName?.css === css &&
+          !elementWithSameName.willBeRenderedAsSVG
+        ) {
           return {
             existsWithSameCss: true,
             name: className + suffix,
@@ -146,7 +148,7 @@ function createTree(selection) {
         shortName,
         skipCss,
         css,
-        allChildrenAreVector: allChildrenAreVector(node),
+        willBeRenderedAsSVG: willBeRenderedAsSVG(node),
         children: [],
         type: node.type,
         characters: node.characters,
@@ -180,7 +182,7 @@ function createTree(selection) {
         const newVariant = {
           name: componentName,
           css: nodeCSS(variant),
-          allChildrenAreVector: allChildrenAreVector(variant),
+          willBeRenderedAsSVG: willBeRenderedAsSVG(variant),
           children: [],
           type: variant?.type,
           characters: variant?.characters,
@@ -311,6 +313,11 @@ function printCSS(tree) {
         } ${className} {${elementCSS}}\n`;
       }
 
+      // if rendered as svg there are no styles necessary for children
+      if (treeElement.willBeRenderedAsSVG) {
+        return;
+      }
+
       if (treeElement.textSegments.length > 1) {
         treeElement.textSegments.forEach((s) => {
           css += `.${s.name} {${s.css}}\n`;
@@ -326,7 +333,7 @@ function printCSS(tree) {
       css += `.${s.name} {${s.css}}\n`;
     });
   }
-  if (!tree.allChildrenAreVector) {
+  if (!tree.willBeRenderedAsSVG) {
     theChildren(tree.children);
   }
 
