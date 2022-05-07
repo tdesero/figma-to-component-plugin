@@ -76,19 +76,6 @@ function segmentCss(textSegment) {
 function createTree(selection) {
   let componentName = "component";
 
-  // Only to prevent duplicate Names
-  let allNames = [];
-
-  function uniqueName(className, n = 1) {
-    const suffix = n > 1 ? n : "";
-    if (allNames.includes(className + suffix)) {
-      return uniqueName(className, n + 1);
-    } else {
-      allNames.push(className + suffix);
-      return className + suffix;
-    }
-  }
-
   if (selection.length === 0) {
     figma.notify("Nothing selected", { error: true });
     return;
@@ -120,14 +107,55 @@ function createTree(selection) {
     variants: isComponentSet && [],
   };
 
+  // Only to prevent duplicate Names
+  let allNames = [];
+
+  function uniqueName(className, n = 1, css = null) {
+    const suffix = n > 1 ? n : "";
+    if (allNames.includes(className + suffix)) {
+      // check if there is already a css class with that name
+      if (css) {
+        const elementWithSameName = getTreeElementByProperty(
+          tree,
+          "shortName",
+          className + suffix
+        );
+        if (elementWithSameName?.css === css) {
+          return {
+            existsWithSameCss: true,
+            name: className + suffix,
+          };
+        }
+      }
+
+      return uniqueName(className, n + 1, css);
+    } else {
+      allNames.push(className + suffix);
+      return {
+        existsWithSameCss: false,
+        name: className + suffix,
+      };
+    }
+  }
+
   function theChildren(children, treeChildren, baseSelector = "") {
     children.forEach((node) => {
       if (!node.visible) return;
-      const name = `${componentName}__${uniqueName(makeSafeForCSS(node.name))}`;
+      const css = nodeCSS(node);
+      const uniqueNameInformation = uniqueName(
+        makeSafeForCSS(node.name),
+        1,
+        css
+      );
+      const shortName = uniqueNameInformation.name;
+      const skipCss = uniqueNameInformation.existsWithSameCss;
+      const name = `${componentName}__${shortName}`;
 
       const newElement = {
         name,
-        css: nodeCSS(node),
+        shortName,
+        skipCss,
+        css,
         allChildrenAreVector: allChildrenAreVector(node),
         children: [],
         type: node.type,
@@ -203,7 +231,7 @@ function getTextSegments(node, componentName, uniqueName) {
   return segments.map((s) => {
     return {
       ...s,
-      name: `${uniqueName(makeSafeForCSS(componentName + "-span"))}`,
+      name: `${uniqueName(makeSafeForCSS(componentName + "-span")).name}`,
       css: segmentCss(s),
     };
   });
@@ -225,6 +253,24 @@ function getTreeElementByName(tree, name) {
   }
 
   return searchTree(tree, name);
+}
+
+function getTreeElementByProperty(tree, property: string, value) {
+  function searchTree(element, property, value) {
+    if (element[property] === value) {
+      return element;
+    } else if (element.children != null) {
+      var i: number;
+      var result = null;
+      for (i = 0; result == null && i < element.children.length; i++) {
+        result = searchTree(element.children[i], property, value);
+      }
+      return result;
+    }
+    return null;
+  }
+
+  return searchTree(tree, property, value);
 }
 
 function eraseDuplicateCSS(modifierCSS: string, baseCSS: string) {
@@ -254,6 +300,7 @@ function printCSS(tree) {
   let css = "";
 
   css += `.${tree.name} {${tree.css}}\n`;
+
   function theChildren(children, isVariant: boolean = false) {
     children.forEach((treeElement) => {
       let elementCSS = treeElement.css;
@@ -268,7 +315,7 @@ function printCSS(tree) {
         }
       }
 
-      if (elementCSS !== "") {
+      if (elementCSS !== "" && !treeElement.skipCss) {
         css += `${
           treeElement.baseSelector || ""
         } ${className} {${elementCSS}}\n`;
