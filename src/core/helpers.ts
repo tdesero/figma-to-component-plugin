@@ -69,7 +69,7 @@ export function cleanStyleName(name) {
 
 export function cleanNumber(n, toFixed = 2): Number {
   if (!n) return 0;
-  return parseFloat(n.toFixed(toFixed));
+  return parseFloat(Number(n).toFixed(toFixed));
 }
 
 export function allChildrenAreVector(node) {

@@ -1,0 +1,121 @@
+.empty-state-notification {
+  box-sizing: border-box;
+  background: #e5e5e5;
+  padding: 10px 10px 10px 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex: 1;
+  width: auto;
+  height: auto;
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+}
+
+.empty-state-notification__content {
+  box-sizing: border-box;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  position: relative;
+  margin: 0;
+}
+
+.empty-state-notification__img {
+  box-sizing: border-box;
+  background: transparent;
+  width: 50px;
+  height: 46px;
+  position: relative;
+  margin: 0;
+}
+
+.empty-state-notification__rectangle-780 {
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid #2c2c2c;
+  width: auto;
+  height: auto;
+  position: absolute;
+  right: 4px;
+  left: 4px;
+  bottom: 4px;
+  top: 4px;
+  margin: 0;
+}
+
+.empty-state-notification__rectangle-779 {
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #2c2c2c;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  margin: 0;
+}
+
+.empty-state-notification__rectangle-782 {
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #2c2c2c;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  margin: 0;
+}
+
+.empty-state-notification__rectangle-781 {
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #2c2c2c;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  margin: 0;
+}
+
+.empty-state-notification__rectangle-783 {
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #2c2c2c;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  margin: 0;
+}
+
+.empty-state-notification__mouse-pointer {
+  box-sizing: border-box;
+  position: absolute;
+  left: 17px;
+  top: 17px;
+  margin: 0;
+  overflow: visible;
+}
+
+.empty-state-notification__text {
+  color: #000000;
+  text-align: left;
+  font: var(--pos-ui11medium, 500 11px/16px "Inter");
+  position: relative;
+  width: auto;
+  height: auto;
+  margin: 0;
+}

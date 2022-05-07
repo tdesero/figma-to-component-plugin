@@ -4,13 +4,14 @@ import { VariablesIcon } from "./components/icons/VariablesIcon";
 import { VisibleIcon } from "./components/icons/VisibleIcon";
 import { Toolbar } from "./components/Toolbar";
 import { ToolbarBtn } from "./components/ToolbarBtn";
+import { Loader } from "./components/Loader";
 import "./styles.css";
 import { useState } from "react";
 import { PreviewIFrame } from "./components/PreviewIFrame";
 import { CodePreview } from "./components/CodePreview";
 import { toPascalCase } from "./helpers/toPascalCase";
 
-var beautify = require('js-beautify');
+var beautify = require("js-beautify");
 
 /* temp */
 import {
@@ -18,24 +19,32 @@ import {
   testHtml,
   testPreview,
   testReact,
-  testVars
+  testVars,
 } from "./test-code";
 import { TailwindIFrame } from "./components/TailwindIFrame";
+import { EmptyStateNotification } from "./components/EmptyStateNotification";
 
 export default function App() {
   const [selectedTab, setSelectedTab] = useState("preview");
-  const [code, setCode] = useState('');
-  const [preview, setPreview] = useState('');
-  const [css, setCss] = useState('');
-  const [vars, setVars] = useState('');
-  const [codeLanguage, setCodeLanguage] = useState('html');
+  const [code, setCode] = useState("");
+  const [preview, setPreview] = useState("");
+  const [css, setCss] = useState("");
+  const [vars, setVars] = useState("");
+  const [codeLanguage, setCodeLanguage] = useState("html");
   const [framework, setFramework] = useState();
-
+  const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState();
 
   window.onmessage = (event) => {
-    const framework = event.data.pluginMessage.framework;
-    const styles = event.data.pluginMessage.styles;
-  
+    const { framework, styles, loading, notification } =
+      event.data.pluginMessage;
+    setLoading(loading);
+    setNotification(notification);
+
+    if (loading || notification) {
+      return;
+    }
+
     const variables =
       ":root {\n" +
       "  /* Colors */\n" +
@@ -51,19 +60,19 @@ export default function App() {
         })
         .join("\n") +
       "\n}\n\n";
-  
+
     const html = event.data.pluginMessage.html;
     const css = event.data.pluginMessage.css;
-  
+
     const name = toPascalCase(event.data.pluginMessage.name);
-  
+
     var preview =
       framework === "tailwind(beta)"
         ? html
         : html + "<style>" + css + "</style>";
-  
+
     const frameworkCode = (framework) => {
-      let code = '';
+      let code = "";
       switch (framework) {
         case "react":
           code =
@@ -77,19 +86,19 @@ export default function App() {
           code = html;
       }
       return code;
-    }
-   
+    };
+
     setPreview(preview);
-    setCss(css.replaceAll('\n \n', '\n'));
+    setCss(css.replaceAll("\n \n", "\n"));
     setCode(frameworkCode(framework));
     setVars(variables);
     setFramework(framework);
 
     const languages = {
-      react: 'javascript',
-      html: 'html'
-    }
-    const language = languages[framework] ? languages[framework] : 'html' 
+      react: "javascript",
+      html: "html",
+    };
+    const language = languages[framework] ? languages[framework] : "html";
 
     setCodeLanguage(language);
   };
@@ -130,19 +139,32 @@ export default function App() {
           }}
         />
       </Toolbar>
-      {selectedTab === "preview" && (
-        framework === 'tailwind(beta)' 
-        ? <TailwindIFrame html={preview} />
-        : <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>
-      )}
-      {selectedTab === "code" && (
-        <CodePreview language={codeLanguage} codeString={code} />
-      )}
-      {selectedTab === "style" && (
-        <CodePreview language="css" codeString={css} />
-      )}
-      {selectedTab === "variables" && (
-        <CodePreview language="css" codeString={vars} />
+      {notification ? (
+        <EmptyStateNotification msg={notification} />
+      ) : (
+        <>
+          {loading ? (
+            <Loader />
+          ) : (
+            <>
+              {selectedTab === "preview" &&
+                (framework === "tailwind(beta)" ? (
+                  <TailwindIFrame html={preview} />
+                ) : (
+                  <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>
+                ))}
+              {selectedTab === "code" && (
+                <CodePreview language={codeLanguage} codeString={code} />
+              )}
+              {selectedTab === "style" && (
+                <CodePreview language="css" codeString={css} />
+              )}
+              {selectedTab === "variables" && (
+                <CodePreview language="css" codeString={vars} />
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

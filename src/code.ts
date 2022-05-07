@@ -76,16 +76,6 @@ function segmentCss(textSegment) {
 function createTree(selection) {
   let componentName = "component";
 
-  if (selection.length === 0) {
-    figma.notify("Nothing selected", { error: true });
-    return;
-  }
-
-  if (selection.length > 1) {
-    figma.notify("Select only 1 Node", { error: true });
-    return;
-  }
-
   const selectionNode = <any>selection[0];
 
   const isComponentSet = selectionNode.type === "COMPONENT_SET";
@@ -431,11 +421,44 @@ figma.parameters.on(
   }
 );
 
-figma.on("run", async ({ command, parameters }: RunEvent) => {
+let pluginParameters;
+
+figma.on("run", ({ command, parameters }: RunEvent) => {
+  figma.showUI(__html__, { height: 600, width: 500 });
+  pluginParameters = parameters;
+
+  setTimeout(() => {
+    updateAndPostToUI(pluginParameters);
+  }, 100);
+});
+
+figma.on("selectionchange", () => {
+  figma.ui.postMessage({ loading: true });
+
+  setTimeout(() => {
+    updateAndPostToUI(pluginParameters);
+  }, 100);
+});
+
+async function updateAndPostToUI(parameters: ParameterValues) {
+  if (figma.currentPage.selection.length === 0) {
+    figma.ui.postMessage({
+      loading: false,
+      notification: "Select a layer.",
+    });
+    return;
+  }
+
+  if (figma.currentPage.selection.length > 1) {
+    figma.ui.postMessage({
+      loading: false,
+      notification: "Select only one layer.",
+    });
+    return;
+  }
+
   const tree = createTree(figma.currentPage.selection);
   console.log(tree);
-
-  figma.showUI(__html__, { height: 600, width: 500 });
 
   const css = parameters.framework === "tailwind(beta)" ? "-" : printCSS(tree);
   const html =
@@ -444,10 +467,12 @@ figma.on("run", async ({ command, parameters }: RunEvent) => {
       : await printHTML(tree);
 
   figma.ui.postMessage({
+    loading: false,
+    notification: false,
     css,
     html,
     framework: parameters.framework,
     styles: getStyles(figma),
     name: figma.currentPage?.selection?.[0]?.name,
   });
-});
+}
