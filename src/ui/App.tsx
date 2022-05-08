@@ -1,3 +1,4 @@
+import "./styles.css";
 import { CodeIcon } from "./components/icons/CodeIcon";
 import { StyleIcon } from "./components/icons/StyleIcon";
 import { VariablesIcon } from "./components/icons/VariablesIcon";
@@ -5,7 +6,6 @@ import { VisibleIcon } from "./components/icons/VisibleIcon";
 import { Toolbar } from "./components/Toolbar";
 import { ToolbarBtn } from "./components/ToolbarBtn";
 import { Loader } from "./components/Loader";
-import "./styles.css";
 import { useState } from "react";
 import { PreviewIFrame } from "./components/PreviewIFrame";
 import { CodePreview } from "./components/CodePreview";
@@ -13,14 +13,6 @@ import { toPascalCase } from "./helpers/toPascalCase";
 
 var beautify = require("js-beautify");
 
-/* temp */
-import {
-  testCss,
-  testHtml,
-  testPreview,
-  testReact,
-  testVars,
-} from "./test-code";
 import { TailwindIFrame } from "./components/TailwindIFrame";
 import { EmptyStateNotification } from "./components/EmptyStateNotification";
 
