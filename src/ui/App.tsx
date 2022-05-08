@@ -15,6 +15,7 @@ var beautify = require("js-beautify");
 
 import { TailwindIFrame } from "./components/TailwindIFrame";
 import { EmptyStateNotification } from "./components/EmptyStateNotification";
+import { PARAMETERS } from "../constants";
 
 export default function App() {
   const [selectedTab, setSelectedTab] = useState("preview");
@@ -59,7 +60,7 @@ export default function App() {
     const name = toPascalCase(event.data.pluginMessage.name);
 
     var preview =
-      framework === "tailwind(beta)"
+      framework === PARAMETERS.FRAMEWORKS.TAILWIND
         ? html
         : html + "<style>" + css + "</style>";
 
@@ -140,7 +141,7 @@ export default function App() {
           ) : (
             <>
               {selectedTab === "preview" &&
-                (framework === "tailwind(beta)" ? (
+                (framework === PARAMETERS.FRAMEWORKS.TAILWIND ? (
                   <TailwindIFrame html={preview} />
                 ) : (
                   <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>

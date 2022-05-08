@@ -4,7 +4,7 @@ It tries to interpret the css already generated from this plugin as tailwind cla
 This will never work perfectly but may provide a starting point for development.
 */
 
-import { createSVG } from "../code";
+import { createSVG } from "./createSVG";
 import { willBeRenderedAsSVG } from "./helpers";
 
 const sizesMap = {
