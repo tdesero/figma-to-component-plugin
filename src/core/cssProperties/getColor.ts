@@ -1,7 +1,14 @@
 import { rgbToHex, rgbaColor, cleanStyleName } from "../helpers";
 import { gradientFill } from "./gradientFill";
 
-export function getColor(fillOrColor, styleId) {
+export function getColor(
+  fillOrColor,
+  styleId,
+  shouldBeRenderedAsGradient = false // to enable multiple fills
+) {
+  if (shouldBeRenderedAsGradient && (!fillOrColor || !fillOrColor.visible)) {
+    return "";
+  }
   if (!fillOrColor || !fillOrColor.visible) {
     return "transparent";
   }
@@ -15,6 +22,11 @@ export function getColor(fillOrColor, styleId) {
 
   if (gradientTypes.includes(fillOrColor.type)) {
     return gradientFill(fillOrColor);
+  }
+
+  if (shouldBeRenderedAsGradient && fillOrColor.type === "SOLID") {
+    const c = rgbaColor(fillOrColor.color, fillOrColor.opacity);
+    return `linear-gradient(to left, ${c}, ${c})`;
   }
 
   if (styleId) {

@@ -18,7 +18,7 @@ export function gradientFill(fill) {
   };
 
   const gradientSpecificTextMap = {
-    GRADIENT_LINEAR: `${transforms.angle + 90}deg`,
+    GRADIENT_LINEAR: `${cleanNumber(transforms.angle + 90)}deg`,
     GRADIENT_RADIAL: "closest-side",
     GRADIENT_ANGULAR: `from ${cleanNumber(
       transforms.angle + 90
