@@ -163,20 +163,6 @@ function createTree(selection) {
       const skipCss = uniqueNameInformation.existsWithSameCss;
       const name = `${componentName}__${shortName}`;
 
-      /*const newElement = {
-        name,
-        shortName,
-        skipCss,
-        css,
-        willBeRenderedAsSVG: willBeRenderedAsSVG(node),
-        children: [],
-        type: node.type,
-        characters: node.characters,
-        originalNode: node,
-        textSegments: [],
-        baseSelector,
-      };*/
-
       const newElement = createTreeElement({
         name,
         node,
