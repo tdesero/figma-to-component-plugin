@@ -194,20 +194,18 @@ function createTree(selection) {
         const variantName = makeSafeForCSS(
           `${componentName}--${variant?.name}`
         );
-        const newVariant = {
+
+        const baseSelector = "." + variantName;
+
+        const newVariant = createTreeElement({
           name: componentName,
+          node: variant,
           css: nodeCSS(variant),
-          willBeRenderedAsSVG: willBeRenderedAsSVG(variant),
-          children: [],
-          type: variant?.type,
-          characters: variant?.characters,
-          originalNode: variant,
-          textSegments: [],
-          baseSelector: "." + variantName,
-        };
+          baseSelector,
+        });
         tree.variants?.push(newVariant);
         allNames = []; // reset classNames so the new generated match the ones in the defaultVariant
-        theChildren(variant.children, newVariant.children, "." + variantName);
+        theChildren(variant.children, newVariant.children, baseSelector);
       });
     }
   }
