@@ -1,4 +1,9 @@
-import { rgbToHex, rgbaColor, cleanStyleName } from "../helpers";
+import {
+  rgbToHex,
+  rgbaColor,
+  cleanStyleName,
+  colorAsHexOrRgba,
+} from "../helpers";
 import { gradientFill } from "./gradientFill";
 
 export function getColor(
@@ -24,25 +29,19 @@ export function getColor(
     return gradientFill(fillOrColor);
   }
 
+  const color = colorAsHexOrRgba(fillOrColor);
+
   if (shouldBeRenderedAsGradient && fillOrColor.type === "SOLID") {
-    const c = rgbaColor(fillOrColor.color, fillOrColor.opacity);
-    return `linear-gradient(to left, ${c}, ${c})`;
+    return `linear-gradient(to left, ${color}, ${color})`;
   }
 
   if (styleId) {
     const styleName = cleanStyleName(figma.getStyleById(styleId)?.name);
 
-    const color =
-      fillOrColor.opacity < 1
-        ? rgbaColor(fillOrColor.color, fillOrColor.opacity)
-        : rgbToHex(fillOrColor.color);
-
     return `var(--${styleName}, ${color})`;
   }
 
-  return fillOrColor.opacity < 1
-    ? rgbaColor(fillOrColor.color, fillOrColor.opacity)
-    : rgbToHex(fillOrColor.color);
+  return colorAsHexOrRgba(fillOrColor);
 }
 
 export default getColor;

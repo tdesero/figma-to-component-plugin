@@ -7,7 +7,9 @@ export function gradientFill(fill) {
   console.log(fill.gradientTransform);
 
   const gradientMap = gradientStops.map((s) => {
-    return `${rgbaColor(s.color, cleanNumber(s.color.a))} ${s.position * 100}%`;
+    return `${rgbaColor(s.color, cleanNumber(s.color.a * fill.opacity))} ${
+      s.position * 100
+    }%`;
   });
 
   const gradientNameMap = {
