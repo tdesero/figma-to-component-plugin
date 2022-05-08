@@ -1,13 +1,20 @@
 import { rgbToHex, rgbaColor, cleanStyleName } from "../helpers";
-import { gradientLinear } from "./gradientLinear";
+import { gradientFill } from "./gradientFill";
 
 export function getColor(fillOrColor, styleId) {
   if (!fillOrColor || !fillOrColor.visible) {
     return "transparent";
   }
 
-  if (fillOrColor.type === "GRADIENT_LINEAR") {
-    return gradientLinear(fillOrColor);
+  const gradientTypes = [
+    "GRADIENT_LINEAR",
+    "GRADIENT_RADIAL",
+    "GRADIENT_ANGULAR",
+    "GRADIENT_DIAMOND",
+  ];
+
+  if (gradientTypes.includes(fillOrColor.type)) {
+    return gradientFill(fillOrColor);
   }
 
   if (styleId) {

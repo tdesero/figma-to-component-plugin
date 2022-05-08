@@ -13,7 +13,7 @@ import fillColor from "./fillColor";
 import backgroundProp from "./backgroundProp";
 import colorProp from "./colorProp";
 import transformProps from "./transformProps";
-import gradientLinear from "./gradientLinear";
+import gradientFill from "./gradientFill";
 import borderRadiusProp from "./borderRadiusProp";
 import strokeColor from "./strokeColor";
 import getColor from "./getColor";
@@ -39,7 +39,7 @@ export {
   backgroundProp,
   colorProp,
   transformProps,
-  gradientLinear,
+  gradientFill,
   borderRadiusProp,
   strokeColor,
   getColor,
