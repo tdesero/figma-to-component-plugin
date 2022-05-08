@@ -15,12 +15,15 @@ import {
   backgroundProp,
   colorProp,
 } from "./cssProperties";
+import backdropFilterProp from "./cssProperties/backdropFilterProp";
+import filterProp from "./cssProperties/filterProp";
 
 export function nodeCSS(node): string {
   console.log("node", node);
 
   if (node.type?.toString() === "TEXT") {
     return `
+      margin: 0;
       ${colorProp(node)}
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
       ${fontProp(node)}
@@ -30,11 +33,12 @@ export function nodeCSS(node): string {
       ${positionProps(node)}
       ${displayProp(node)}
       ${dimensions(node)}
-      margin: 0;
       ${transformProps(node)}
+      ${filterProp(node)}
     `;
   } else {
     return `
+      margin: 0;
       box-sizing: border-box;
       ${backgroundProp(node)}
       ${borderRadiusProp(node)}
@@ -45,9 +49,10 @@ export function nodeCSS(node): string {
       ${dimensions(node)}
       ${positionProps(node)}
       ${boxShadowProp(node)}
-      margin: 0;
       ${transformProps(node)}
       ${overflowProp(node)}
+      ${filterProp(node)}
+      ${backdropFilterProp(node)}
     `;
   }
 }

@@ -33,6 +33,8 @@ export function getStyles(figma) {
     };
   });
 
+  /* TODO: effectStyles */
+
   return {
     paintStyles,
     textStyles,

@@ -21,7 +21,7 @@ function transformProps(node) {
 
   // TODO: check if it is rendered inside an autolayout & fix transform origin...
   if (isSVG) {
-    if (!node.absoluteRenderBounds) return;
+    if (!node.absoluteRenderBounds) return "";
     return `
       transform: translate(${cleanNumber(
         (absoluteTransforms.translateX - node.absoluteRenderBounds.x) * -1

@@ -1,4 +1,9 @@
-import { rgbaColor, willBeRenderedAsSVG, cleanNumber } from "../helpers";
+import {
+  rgbaColor,
+  willBeRenderedAsSVG,
+  cleanNumber,
+  cleanStyleName,
+} from "../helpers";
 
 function boxShadowProp(node) {
   if (
@@ -8,30 +13,34 @@ function boxShadowProp(node) {
     node.type === "GROUP"
   )
     return "";
-  const shadows = node.effects.filter(
-    (effect) => effect.type === "DROP_SHADOW"
+
+  const styleId = node.effectStyleId;
+
+  const shadowTypes = ["INNER_SHADOW", "DROP_SHADOW"];
+
+  const shadows = node.effects.filter((effect) =>
+    shadowTypes.includes(effect.type)
   );
   if (shadows.length === 0) return "";
 
   let css = "box-shadow: ";
-  css += shadows
+  let value = shadows
     .map((s) => {
-      return `${cleanNumber(s.offset.x)}px ${cleanNumber(
-        s.offset.y
-      )}px ${cleanNumber(s.radius)}px ${cleanNumber(s.spread)}px ${rgbaColor(
-        s.color,
-        s.color.a
-      )}`;
+      return `${s.type === "INNER_SHADOW" ? "inset" : ""} ${cleanNumber(
+        s.offset.x
+      )}px ${cleanNumber(s.offset.y)}px ${cleanNumber(
+        s.radius
+      )}px ${cleanNumber(s.spread)}px ${rgbaColor(s.color, s.color.a)}`;
     })
     .join(", ");
-  return (
-    `${
-      node.effectStyleId &&
-      "/*" + figma.getStyleById(node.effectStyleId)?.name + "*/"
-    }` +
-    css +
-    ";"
-  );
+
+  if (styleId) {
+    const styleName = cleanStyleName(figma.getStyleById(styleId)?.name);
+
+    value = `var(--${styleName}-box-shadow, ${value})`;
+  }
+
+  return css + value + ";";
 }
 
 export default boxShadowProp;
