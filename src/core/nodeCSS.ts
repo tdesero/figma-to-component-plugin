@@ -14,6 +14,7 @@ import {
   textDecorationProp,
   backgroundProp,
   colorProp,
+  flexPropsForText,
 } from "./cssProperties";
 import backdropFilterProp from "./cssProperties/backdropFilterProp";
 import filterProp from "./cssProperties/filterProp";
@@ -35,6 +36,7 @@ export function nodeCSS(node): string {
       ${dimensions(node)}
       ${transformProps(node)}
       ${filterProp(node)}
+      ${flexPropsForText(node)}
     `;
   } else {
     return `

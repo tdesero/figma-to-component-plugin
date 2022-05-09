@@ -22,6 +22,7 @@ import fontShorthand from "./fontShorthand";
 import fontProp from "./fontProp";
 import textTransformProp from "./textTransformProp";
 import textDecorationProp from "./textDecorationProp";
+import flexPropsForText from "./flexPropsForText";
 
 export {
   borderProp,
@@ -48,4 +49,5 @@ export {
   fontProp,
   textTransformProp,
   textDecorationProp,
+  flexPropsForText,
 };
