@@ -19,11 +19,16 @@ function displayProp(node) {
     SPACE_BETWEEN: "space-between",
   };
 
+  function gap() {
+    if (node.primaryAxisAlignItems === "SPACE_BETWEEN") return "";
+    return `gap: ${cleanNumber(node.itemSpacing)}px;`;
+  }
+
   const flexProps = (direction) => {
     return `
       display: flex;
       flex-direction: ${direction};
-      gap: ${cleanNumber(node.itemSpacing)}px;
+      ${gap()}
       align-items: ${alignmentMap[node.counterAxisAlignItems]};
       justify-content: ${alignmentMap[node.primaryAxisAlignItems]};
     `;
