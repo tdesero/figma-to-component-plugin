@@ -5,7 +5,6 @@ function positionProps(node) {
   let coord = "";
 
   if (node.id !== figma.currentPage.selection[0].id) {
-    // Super ugly but works for now...
     coord = cssFromConstraints(node);
   }
 
@@ -19,7 +18,9 @@ function positionProps(node) {
       return "relative;";
     }
     return `${
-      node.parent.layoutMode === "NONE" || !node.parent.layoutMode
+      node.layoutPositioning === "ABSOLUTE" ||
+      node.parent.layoutMode === "NONE" ||
+      !node.parent.layoutMode
         ? `absolute; ${coord}`
         : "relative;"
     }`;
