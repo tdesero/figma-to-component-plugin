@@ -23,6 +23,7 @@ import fontProp from "./fontProp";
 import textTransformProp from "./textTransformProp";
 import textDecorationProp from "./textDecorationProp";
 import flexPropsForText from "./flexPropsForText";
+import marginProp from "./marginProp";
 
 export {
   borderProp,
@@ -50,4 +51,5 @@ export {
   textTransformProp,
   textDecorationProp,
   flexPropsForText,
+  marginProp,
 };

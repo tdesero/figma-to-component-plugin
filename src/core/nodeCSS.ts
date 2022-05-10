@@ -15,6 +15,7 @@ import {
   backgroundProp,
   colorProp,
   flexPropsForText,
+  marginProp,
 } from "./cssProperties";
 import backdropFilterProp from "./cssProperties/backdropFilterProp";
 import filterProp from "./cssProperties/filterProp";
@@ -24,7 +25,7 @@ export function nodeCSS(node): string {
 
   if (node.type?.toString() === "TEXT") {
     return `
-      margin: 0;
+      ${marginProp(node)}
       ${colorProp(node)}
       text-align: ${node.textAlignHorizontal?.toLowerCase()};
       ${fontProp(node)}
@@ -40,7 +41,7 @@ export function nodeCSS(node): string {
     `;
   } else {
     return `
-      margin: 0;
+      ${marginProp(node)}
       box-sizing: border-box;
       ${backgroundProp(node)}
       ${borderRadiusProp(node)}

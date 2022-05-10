@@ -21,6 +21,7 @@ function displayProp(node) {
 
   function gap() {
     if (node.primaryAxisAlignItems === "SPACE_BETWEEN") return "";
+    if (node.itemSpacing < 0) return "";
     return `gap: ${cleanNumber(node.itemSpacing)}px;`;
   }
 
