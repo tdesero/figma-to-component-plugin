@@ -93,5 +93,6 @@ async function updateAndPostToUI(parameters: ParameterValues) {
     framework: parameters.framework,
     styles: getStyles(figma),
     name: figma.currentPage?.selection?.[0]?.name,
+    selectionWidth: figma.currentPage?.selection?.[0]?.width,
   });
 }

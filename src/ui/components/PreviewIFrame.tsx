@@ -4,17 +4,25 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { ZoomSelect } from "./ZoomSelect";
 
-export function PreviewIFrame({ html, title, ...props }) {
+export function PreviewIFrame({ html, selectionWidth, title, ...props }) {
   const [contentRef, setContentRef] = useState(null);
   const mountNode = contentRef?.contentWindow?.document?.body;
-  const [zoom, setZoom] = useState(1.0);
+
+  const fitWidth = selectionWidth > 480 ? 480 / selectionWidth : 1.0;
+
+  const [zoom, setZoom] = useState(fitWidth);
 
   function setZoomVal(e) {
     return setZoom(e.target.value);
   }
 
   function InnerHtml({ html }) {
-    return <div style={{padding: 16, textAlign: 'center'}} dangerouslySetInnerHTML={{ __html: html }} />;
+    return (
+      <div
+        style={{ padding: 16, textAlign: "center" }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
   }
 
   return (
@@ -38,6 +46,10 @@ export function PreviewIFrame({ html, title, ...props }) {
         value={zoom}
         onChange={setZoomVal}
         options={[
+          {
+            value: fitWidth,
+            label: "Fit",
+          },
           {
             value: 0.5,
             label: "50%",

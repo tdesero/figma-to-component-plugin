@@ -28,8 +28,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState();
 
+  const [selectionWidth, setSelectionWidth] = useState();
+
   window.onmessage = (event) => {
-    const { framework, styles, loading, notification } =
+    const { framework, styles, loading, notification, selectionWidth } =
       event.data.pluginMessage;
     setLoading(loading);
     setNotification(notification);
@@ -86,6 +88,8 @@ export default function App() {
     setCode(frameworkCode(framework));
     setVars(variables);
     setFramework(framework);
+
+    setSelectionWidth(selectionWidth);
 
     const languages = {
       react: "javascript",
@@ -144,7 +148,11 @@ export default function App() {
                 (framework === PARAMETERS.FRAMEWORKS.TAILWIND ? (
                   <TailwindIFrame html={preview} />
                 ) : (
-                  <PreviewIFrame title="Preview" html={preview}></PreviewIFrame>
+                  <PreviewIFrame
+                    selectionWidth={selectionWidth}
+                    title="Preview"
+                    html={preview}
+                  ></PreviewIFrame>
                 ))}
               {selectedTab === "code" && (
                 <CodePreview language={codeLanguage} codeString={code} />
