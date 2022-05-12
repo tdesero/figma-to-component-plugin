@@ -1,10 +1,10 @@
 import { willBeRenderedAsSVG, cleanStyleName } from "../helpers";
 import { getColor } from "./getColor";
 
-export function fillColor(node) {
-  if (willBeRenderedAsSVG(node)) return "";
+export function fillColor(nodeOrStyle) {
+  if (willBeRenderedAsSVG(nodeOrStyle)) return "";
 
-  const fills = node.fills;
+  const fills = nodeOrStyle.fills;
 
   // multiple fills
   if (fills?.length > 1) {
@@ -17,11 +17,17 @@ export function fillColor(node) {
       .reverse()
       .join(", ");
 
+    if (nodeOrStyle.fillStyleId) {
+      const styleName = cleanStyleName(
+        figma.getStyleById(nodeOrStyle.fillStyleId)?.name
+      );
+      return `var(--${styleName}, ${fillsAsGradients})`;
+    }
     return fillsAsGradients;
   }
 
   // single fill
-  return getColor(fills?.[0], node.fillStyleId);
+  return getColor(fills?.[0], nodeOrStyle.fillStyleId);
 }
 
 export default fillColor;

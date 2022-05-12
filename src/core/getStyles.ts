@@ -5,12 +5,13 @@ import {
   fontShorthand,
   getColor,
 } from "./cssProperties";
+import styleColor from "./cssProperties/styleColor";
 
 export function getStyles(figma) {
   const paintStyles = figma.getLocalPaintStyles()?.map(({ name, paints }) => {
     return {
       name: cleanStyleName(name),
-      value: getColor(paints?.[0], false),
+      value: styleColor(paints),
     };
   });
 

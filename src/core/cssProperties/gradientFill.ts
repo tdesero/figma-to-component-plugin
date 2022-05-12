@@ -1,6 +1,11 @@
-import { rgbaColor, getTransforms, cleanNumber } from "../helpers";
+import {
+  rgbaColor,
+  getTransforms,
+  cleanNumber,
+  cleanStyleName,
+} from "../helpers";
 
-export function gradientFill(fill) {
+export function gradientFill(fill, styleId, isMultiFill = false) {
   const { gradientStops } = fill;
   const transforms = getTransforms(fill.gradientTransform);
 
@@ -28,9 +33,16 @@ export function gradientFill(fill) {
     GRADIENT_DIAMOND: "closest-side",
   };
 
-  return `${gradientNameMap[fill.type]}(${
+  const gradient = `${gradientNameMap[fill.type]}(${
     gradientSpecificTextMap[fill.type]
   }, ${gradientMap.join(",")})`;
+
+  if (styleId) {
+    const styleName = cleanStyleName(figma.getStyleById(styleId)?.name);
+    return `var(--${styleName}, ${gradient})`;
+  }
+
+  return gradient;
 }
 
 export default gradientFill;

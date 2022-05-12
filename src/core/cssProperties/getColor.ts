@@ -1,17 +1,12 @@
-import {
-  rgbToHex,
-  rgbaColor,
-  cleanStyleName,
-  colorAsHexOrRgba,
-} from "../helpers";
+import { cleanStyleName, colorAsHexOrRgba } from "../helpers";
 import { gradientFill } from "./gradientFill";
 
 export function getColor(
   fillOrColor,
   styleId,
-  shouldBeRenderedAsGradient = false // to enable multiple fills
+  isMultiFill = false // to enable multiple fills
 ) {
-  if (shouldBeRenderedAsGradient && (!fillOrColor || !fillOrColor.visible)) {
+  if (isMultiFill && (!fillOrColor || !fillOrColor.visible)) {
     return "";
   }
   if (!fillOrColor || !fillOrColor.visible) {
@@ -26,12 +21,12 @@ export function getColor(
   ];
 
   if (gradientTypes.includes(fillOrColor.type)) {
-    return gradientFill(fillOrColor);
+    return gradientFill(fillOrColor, styleId, isMultiFill);
   }
 
   const color = colorAsHexOrRgba(fillOrColor);
 
-  if (shouldBeRenderedAsGradient && fillOrColor.type === "SOLID") {
+  if (isMultiFill && fillOrColor.type === "SOLID") {
     return `linear-gradient(to left, ${color}, ${color})`;
   }
 
