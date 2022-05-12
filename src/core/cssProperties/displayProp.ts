@@ -4,7 +4,7 @@ function displayProp(node) {
   const flexShrinkGrow = node.layoutGrow === 1 ? "flex: 1;" : shrink();
 
   function shrink() {
-    return !(node.type === "TEXT") && !(node.primaryAxisSizingMode === "AUTO")
+    return !(node.type === "TEXT") //&& !(node.primaryAxisSizingMode === "AUTO")
       ? "flex-shrink: 0;"
       : "";
   }
