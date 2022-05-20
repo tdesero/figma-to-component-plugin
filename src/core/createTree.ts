@@ -2,8 +2,12 @@ import { makeSafeForCSS, willBeRenderedAsSVG } from "./helpers";
 import { nodeCSS } from "./nodeCSS";
 import { getTreeElementByProperty } from "./getTreeElementByProperty";
 import { getTextSegments } from "./getTextSegments";
+import { PARAMETERS } from "../constants";
 
-export function createTree(selection): {
+export function createTree(
+  selection,
+  { cssStyle }
+): {
   name: any;
   shortName: any;
   skipCss: boolean;
@@ -25,40 +29,6 @@ export function createTree(selection): {
   const originalNode = isComponentSet
     ? selectionNode.defaultVariant
     : selectionNode;
-
-  componentName = makeSafeForCSS(selectionNode.name);
-
-  const createTreeElement = ({
-    name,
-    node,
-    css,
-    shortName = name,
-    skipCss = false,
-    baseSelector = "",
-    isComponentSet = false,
-  }) => {
-    return {
-      name,
-      shortName,
-      skipCss,
-      css,
-      willBeRenderedAsSVG: willBeRenderedAsSVG(node),
-      children: [],
-      type: node.type,
-      characters: node.characters,
-      originalNode: node,
-      textSegments: [],
-      baseSelector,
-      variants: isComponentSet && [],
-    };
-  };
-
-  const tree = createTreeElement({
-    name: componentName,
-    node: originalNode,
-    css: nodeCSS(originalNode),
-    isComponentSet,
-  });
 
   // Only to prevent duplicate Names
   let allNames = [];
@@ -94,6 +64,40 @@ export function createTree(selection): {
     }
   }
 
+  componentName = uniqueName(makeSafeForCSS(selectionNode.name)).name;
+
+  const createTreeElement = ({
+    name,
+    node,
+    css,
+    shortName = name,
+    skipCss = false,
+    baseSelector = "",
+    isComponentSet = false,
+  }) => {
+    return {
+      name,
+      shortName,
+      skipCss,
+      css,
+      willBeRenderedAsSVG: willBeRenderedAsSVG(node),
+      children: [],
+      type: node.type,
+      characters: node.characters,
+      originalNode: node,
+      textSegments: [],
+      baseSelector,
+      variants: isComponentSet && [],
+    };
+  };
+
+  const tree = createTreeElement({
+    name: componentName,
+    node: originalNode,
+    css: nodeCSS(originalNode),
+    isComponentSet,
+  });
+
   function theChildren(children, treeChildren, baseSelector = "") {
     children.forEach((node) => {
       if (!node.visible) return;
@@ -105,7 +109,9 @@ export function createTree(selection): {
       );
       const shortName = uniqueNameInformation.name;
       const skipCss = uniqueNameInformation.existsWithSameCss;
-      const name = `${componentName}__${shortName}`;
+      const prefix =
+        cssStyle === PARAMETERS.CSS_STYLE.BEM ? `${componentName}__` : "";
+      const name = `${prefix}${shortName}`;
 
       const newElement = createTreeElement({
         name,

@@ -4,4 +4,8 @@ export const PARAMETERS = {
     REACT: "react",
     HTML: "html",
   },
+  CSS_STYLE: {
+    DEFAULT: "default",
+    BEM: "bem",
+  },
 };

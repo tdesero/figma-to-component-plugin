@@ -10,7 +10,7 @@ import { printHTML } from "./core/printHTML";
 import { PARAMETERS } from "./constants";
 
 async function createHTMLandCSS(selection, parameters) {
-  const tree = createTree(figma.currentPage.selection);
+  const tree = createTree(selection, parameters);
   console.log(tree);
 
   const css =
@@ -39,6 +39,13 @@ figma.parameters.on(
           PARAMETERS.FRAMEWORKS.TAILWIND,
         ];
         result.setSuggestions(frameworks.filter((s) => s.includes(query)));
+        break;
+      case "cssStyle":
+        const cssStyles = [
+          PARAMETERS.CSS_STYLE.DEFAULT,
+          PARAMETERS.CSS_STYLE.BEM,
+        ];
+        result.setSuggestions(cssStyles.filter((s) => s.includes(query)));
         break;
       default:
         return;

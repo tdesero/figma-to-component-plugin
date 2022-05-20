@@ -11,6 +11,10 @@
     {
       "name": "Framework",
       "key": "framework"
+    },
+    {
+      "name": "CSS Style",
+      "key": "cssStyle"
     }
   ]
 }
