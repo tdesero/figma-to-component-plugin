@@ -11,7 +11,7 @@ import { PARAMETERS } from "./constants";
 
 async function createHTMLandCSS(selection, parameters) {
   const tree = createTree(selection, parameters);
-  console.log(tree);
+  console.log("tree", tree);
 
   const css =
     parameters.framework === PARAMETERS.FRAMEWORKS.TAILWIND
