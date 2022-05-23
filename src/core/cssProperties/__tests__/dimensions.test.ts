@@ -35,7 +35,7 @@ const testNode3 = {
 };
 
 test("dimensions: layoutMode horizontal & sizingMode auto (with children)", () => {
-  expect(dimensions(testNode3)).toBe(`width: auto; height: 20px;`);
+  expect(dimensions(testNode3)).toBe(`height: 20px;`);
 });
 
 /* test 4 */
@@ -78,7 +78,7 @@ const testNode6 = {
 };
 
 test("dimensions: layoutAlign stretch (parent layoutMode vertical)", () => {
-  expect(dimensions(testNode6)).toBe(`width: auto; height: 20px;`);
+  expect(dimensions(testNode6)).toBe(`height: 20px;`);
 });
 
 /* test 7 */
@@ -93,5 +93,5 @@ const testNode7 = {
 };
 
 test("dimensions: layoutAlign stretch (parent layoutMode horizontal)", () => {
-  expect(dimensions(testNode7)).toBe(`width: 20px; height: auto;`);
+  expect(dimensions(testNode7)).toBe(`width: 20px;`);
 });

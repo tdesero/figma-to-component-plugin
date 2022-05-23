@@ -7,6 +7,8 @@ function backgroundProp(node) {
     return "";
   }
 
+  if (color === "transparent") return "";
+
   return `background: ${color};`;
 }
 

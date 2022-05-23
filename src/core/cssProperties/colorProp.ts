@@ -7,6 +7,8 @@ function colorProp(node) {
     return "";
   }
 
+  if (color === "transparent") return "";
+
   return `color: ${color};`;
 }
 

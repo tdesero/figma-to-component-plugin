@@ -4,6 +4,9 @@ import { eraseDuplicateCSS } from "./eraseDuplicateCSS";
 export function printCSS(tree): string {
   let css = "";
 
+  // mini css reset
+  css += `.${tree.name}, .${tree.name} * { box-sizing: border-box; }`;
+
   css += `.${tree.name} {${tree.css}}\n`;
 
   function theChildren(children, isVariant: boolean = false) {

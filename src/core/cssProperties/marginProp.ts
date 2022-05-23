@@ -16,7 +16,7 @@ function marginProp(node) {
     }
   }
 
-  return "margin: 0;";
+  return "";
 }
 
 export default marginProp;
