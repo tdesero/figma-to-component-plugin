@@ -2,7 +2,7 @@ import { makeSafeForCSS, willBeRenderedAsSVG } from "./helpers";
 import { nodeCSS } from "./nodeCSS";
 import { getTreeElementByProperty } from "./getTreeElementByProperty";
 import { getTextSegments } from "./getTextSegments";
-import { PARAMETERS } from "../constants";
+import { PARAMETERS, SETTINGS } from "../constants";
 
 export function createTree(
   selection,
@@ -110,7 +110,7 @@ export function createTree(
       const shortName = uniqueNameInformation.name;
       const skipCss = uniqueNameInformation.existsWithSameCss;
       const prefix =
-        cssStyle === PARAMETERS.CSS_STYLE.BEM ? `${componentName}__` : "";
+        cssStyle === SETTINGS.CSS_STYLES.BEM ? `${componentName}__` : "";
       const name = `${prefix}${shortName}`;
 
       const newElement = createTreeElement({
