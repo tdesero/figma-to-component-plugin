@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SETTINGS } from "../../constants";
 import { Button } from "./Button";
+import { RadioButton } from "./RadioButton";
 
 export default function Settings({ settings }) {
   const [cssStyle, setCssStyle] = useState(settings.cssStyle);
@@ -9,6 +10,24 @@ export default function Settings({ settings }) {
     <div style={{ padding: 16 }}>
       <p style={{ marginBottom: 8 }}>CSS Methodology</p>
       <div style={{ display: "flex", gap: 8 }}>
+        <RadioButton
+          checked={cssStyle === SETTINGS.CSS_STYLES.BEM}
+          id="BEM"
+          label="BEM"
+          onClick={() => {
+            setCssStyle(SETTINGS.CSS_STYLES.BEM);
+            window.parent.postMessage(
+              {
+                pluginMessage: {
+                  type: "setting",
+                  key: "cssStyle",
+                  value: SETTINGS.CSS_STYLES.BEM,
+                },
+              },
+              "*"
+            );
+          }}
+        />
         <Button
           variant={cssStyle === SETTINGS.CSS_STYLES.BEM ? "" : "outline"}
           onClick={() => {
