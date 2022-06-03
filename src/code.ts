@@ -85,6 +85,7 @@ async function updateAndPostToUI(parameters: ParameterValues) {
   }
 
   const cssStyle = await figma.clientStorage.getAsync("cssStyle");
+  const varStyle = await figma.clientStorage.getAsync("varStyle");
 
   const { html, css } = await createHTMLandCSS(
     figma.currentPage.selection,
@@ -93,7 +94,7 @@ async function updateAndPostToUI(parameters: ParameterValues) {
   );
 
   figma.ui.postMessage({
-    settings: { cssStyle },
+    settings: { cssStyle, varStyle },
     loading: false,
     notification: false,
     css,

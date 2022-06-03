@@ -67,7 +67,11 @@ export default function App() {
       "\n}\n\n";
 
     const html = event.data.pluginMessage.html;
-    const css = event.data.pluginMessage.css;
+    let css = event.data.pluginMessage.css;
+
+    if (settings.varStyle === SETTINGS.VAR_STYLES.NONE) {
+      css = css.replace(/var\(--[^,]*,(.*)\);/g, "$1;");
+    }
 
     const name = toPascalCase(event.data.pluginMessage.name);
 
