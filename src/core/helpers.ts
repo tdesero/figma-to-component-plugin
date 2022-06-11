@@ -74,6 +74,10 @@ export function cleanNumber(n, toFixed = 2): Number {
   return parseFloat(Number(n).toFixed(toFixed));
 }
 
+export function valuesAreSame(arr: Array<any>) {
+  return arr.every((v) => v === arr[0]);
+}
+
 export function allChildrenAreVector(node) {
   const vectorTypes = ["VECTOR", "BOOLEAN_OPERATION", "STAR"];
   return (
