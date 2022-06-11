@@ -135,29 +135,29 @@ export function createTree(
     });
   }
 
+  console.log("origNodeChi", originalNode.children.length);
+
   if (originalNode.children?.length > 0) {
     theChildren(originalNode.children, tree.children);
+  }
 
-    /* Component Variants */
-    if (isComponentSet) {
-      selectionNode.children.forEach((variant) => {
-        const variantName = makeSafeForCSS(
-          `${componentName}--${variant?.name}`
-        );
+  /* Component Variants */
+  if (isComponentSet && selectionNode.children?.length > 0) {
+    selectionNode.children.forEach((variant) => {
+      const variantName = makeSafeForCSS(`${componentName}--${variant?.name}`);
 
-        const baseSelector = "." + variantName;
+      const baseSelector = "." + variantName;
 
-        const newVariant = createTreeElement({
-          name: componentName,
-          node: variant,
-          css: nodeCSS(variant),
-          baseSelector,
-        });
-        tree.variants?.push(newVariant);
-        allNames = []; // reset classNames so the new generated match the ones in the defaultVariant
-        theChildren(variant.children, newVariant.children, baseSelector);
+      const newVariant = createTreeElement({
+        name: componentName,
+        node: variant,
+        css: nodeCSS(variant),
+        baseSelector,
       });
-    }
+      tree.variants?.push(newVariant);
+      allNames = []; // reset classNames so the new generated match the ones in the defaultVariant
+      theChildren(variant.children, newVariant.children, baseSelector);
+    });
   }
 
   if (originalNode.type === "TEXT") {
