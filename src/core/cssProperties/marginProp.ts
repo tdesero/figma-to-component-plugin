@@ -7,7 +7,6 @@ function marginProp(node) {
     node.parent.layoutMode !== "NONE" &&
     node.parent.itemSpacing < 0
   ) {
-    console.log("jepp");
     const val = `${cleanNumber(node.parent.itemSpacing)}px`;
     if (node.parent.layoutMode === "HORIZONTAL") {
       return `margin: 0 0 0 ${val};`;
@@ -16,7 +15,7 @@ function marginProp(node) {
     }
   }
 
-  return "margin: 0;";
+  return "";
 }
 
 export default marginProp;

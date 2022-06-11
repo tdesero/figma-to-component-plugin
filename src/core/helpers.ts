@@ -51,12 +51,14 @@ export function escapeHtml(unsafe): String {
 }
 
 export function makeSafeForCSS(name) {
-  return name.replace(/[^a-z0-9_-]/g, function (s) {
-    var c = s.charCodeAt(0);
-    if (c == 32) return "-";
-    if (c >= 65 && c <= 90) return s.toLowerCase();
-    return "-";
-  });
+  return name
+    .replace(/^[0-9]/g, (s) => "_" + s)
+    .replace(/[^a-z0-9_-]/g, function (s) {
+      var c = s.charCodeAt(0);
+      if (c == 32) return "-";
+      if (c >= 65 && c <= 90) return s.toLowerCase();
+      return "-";
+    });
 }
 
 export function cleanStyleName(name) {
@@ -70,6 +72,10 @@ export function cleanStyleName(name) {
 export function cleanNumber(n, toFixed = 2): Number {
   if (!n) return 0;
   return parseFloat(Number(n).toFixed(toFixed));
+}
+
+export function valuesAreSame(arr: Array<any>) {
+  return arr.every((v) => v === arr[0]);
 }
 
 export function allChildrenAreVector(node) {

@@ -9,8 +9,6 @@ export function gradientFill(fill, styleId, isMultiFill = false) {
   const { gradientStops } = fill;
   const transforms = getTransforms(fill.gradientTransform);
 
-  console.log(fill.gradientTransform);
-
   const gradientMap = gradientStops.map((s) => {
     return `${rgbaColor(s.color, cleanNumber(s.color.a * fill.opacity))} ${
       s.position * 100

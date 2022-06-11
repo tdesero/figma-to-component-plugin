@@ -1,0 +1,12 @@
+.typography {
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+}
+
+.typography--copy {
+  font-size: 11px;
+}
+
+.typography--copy-bold {
+  font-size: 11px;
+  font-weight: 600;
+}

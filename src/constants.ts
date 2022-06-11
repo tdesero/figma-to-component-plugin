@@ -5,3 +5,16 @@ export const PARAMETERS = {
     HTML: "html",
   },
 };
+
+export const SETTINGS = {
+  CSS_STYLES: {
+    DEFAULT: "",
+    BEM: "bem",
+    //CSS_MODULES: "css-modules",
+  },
+  VAR_STYLES: {
+    NONE: "",
+    CSS: "css",
+    SCSS: "scss",
+  },
+};

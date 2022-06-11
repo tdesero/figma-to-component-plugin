@@ -66,7 +66,12 @@ function dimensions(node) {
     height = "auto";
   }
 
-  return `width: ${width}; height: ${height};`;
+  return [
+    width !== "auto" ? `width: ${width};` : undefined,
+    height !== "auto" ? `height: ${height};` : undefined,
+  ]
+    .filter((i) => i) // delete undefined
+    .join(" ");
 }
 
 export default dimensions;

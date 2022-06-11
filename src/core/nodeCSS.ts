@@ -42,7 +42,6 @@ export function nodeCSS(node): string {
   } else {
     return `
       ${marginProp(node)}
-      box-sizing: border-box;
       ${backgroundProp(node)}
       ${borderRadiusProp(node)}
       ${borderProp(node)}

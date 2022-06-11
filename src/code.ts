@@ -9,9 +9,13 @@ import { printHTML } from "./core/printHTML";
 
 import { PARAMETERS } from "./constants";
 
-async function createHTMLandCSS(selection, parameters) {
-  const tree = createTree(figma.currentPage.selection);
-  console.log(tree);
+figma.ui.onmessage = (msg) => {
+  figma.clientStorage.setAsync(msg.key, msg.value);
+};
+
+async function createHTMLandCSS(selection, parameters, { cssStyle }) {
+  const tree = createTree(selection, { cssStyle });
+  console.log("tree", tree);
 
   const css =
     parameters.framework === PARAMETERS.FRAMEWORKS.TAILWIND
@@ -80,12 +84,17 @@ async function updateAndPostToUI(parameters: ParameterValues) {
     return;
   }
 
+  const cssStyle = await figma.clientStorage.getAsync("cssStyle");
+  const varStyle = await figma.clientStorage.getAsync("varStyle");
+
   const { html, css } = await createHTMLandCSS(
     figma.currentPage.selection,
-    parameters
+    parameters,
+    { cssStyle }
   );
 
   figma.ui.postMessage({
+    settings: { cssStyle, varStyle },
     loading: false,
     notification: false,
     css,

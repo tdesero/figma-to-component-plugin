@@ -10,12 +10,14 @@ import { useState } from "react";
 import { PreviewIFrame } from "./components/PreviewIFrame";
 import { CodePreview } from "./components/CodePreview";
 import { toPascalCase } from "./helpers/toPascalCase";
+import Settings from "./components/Settings";
 
 var beautify = require("js-beautify");
 
 import { TailwindIFrame } from "./components/TailwindIFrame";
 import { EmptyStateNotification } from "./components/EmptyStateNotification";
-import { PARAMETERS } from "../constants";
+import { PARAMETERS, SETTINGS } from "../constants";
+import { SettingsIcon } from "./components/icons/SettingsIcon";
 
 export default function App() {
   const [selectedTab, setSelectedTab] = useState("preview");
@@ -27,14 +29,22 @@ export default function App() {
   const [framework, setFramework] = useState();
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState();
+  const [settings, setSettings] = useState();
 
   const [selectionWidth, setSelectionWidth] = useState();
 
   window.onmessage = (event) => {
-    const { framework, styles, loading, notification, selectionWidth } =
-      event.data.pluginMessage;
+    const {
+      framework,
+      styles,
+      loading,
+      notification,
+      selectionWidth,
+      settings,
+    } = event.data.pluginMessage;
     setLoading(loading);
     setNotification(notification);
+    setSettings(settings);
 
     if (loading || notification) {
       return;
@@ -57,7 +67,11 @@ export default function App() {
       "\n}\n\n";
 
     const html = event.data.pluginMessage.html;
-    const css = event.data.pluginMessage.css;
+    let css = event.data.pluginMessage.css;
+
+    if (settings.varStyle === SETTINGS.VAR_STYLES.NONE) {
+      css = css.replace(/var\(--[^,]*,(.*)\);/g, "$1;");
+    }
 
     const name = toPascalCase(event.data.pluginMessage.name);
 
@@ -135,6 +149,16 @@ export default function App() {
             setSelectedTab("variables");
           }}
         />
+        <ToolbarBtn
+          icon={<SettingsIcon />}
+          style={{ marginLeft: "auto" }}
+          label="Settings"
+          hideLabel
+          isSelected={selectedTab === "settings"}
+          onClick={() => {
+            setSelectedTab("settings");
+          }}
+        />
       </Toolbar>
       {notification ? (
         <EmptyStateNotification msg={notification} />
@@ -163,6 +187,7 @@ export default function App() {
               {selectedTab === "variables" && (
                 <CodePreview language="css" codeString={vars} />
               )}
+              {selectedTab === "settings" && <Settings settings={settings} />}
             </>
           )}
         </>

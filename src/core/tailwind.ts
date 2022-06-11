@@ -20,7 +20,29 @@ const sizesMap = {
   "16px": 4,
   "20px": 5,
   "24px": 6,
-  /* and many more */
+  "28px": 7,
+  "32px": 8,
+  "36px": 9,
+  "40px": 10,
+  "44px": 11,
+  "48px": 12,
+  "56px": 14,
+  "64px": 16,
+  "80px": 20,
+  "96px": 24,
+  "112px": 28,
+  "128px": 32,
+  "144px": 36,
+  "160px": 40,
+  "176px": 44,
+  "192px": 48,
+  "208px": 52,
+  "224px": 56,
+  "240px": 60,
+  "256px": 64,
+  "288px": 72,
+  "320px": 80,
+  "384px": 96,
 };
 
 const flexDirectionMap = {
@@ -33,6 +55,10 @@ const twMap = {
   gap: sizesMap,
   top: sizesMap,
   left: sizesMap,
+  right: sizesMap,
+  bottom: sizesMap,
+  height: sizesMap,
+  width: sizesMap,
   "flex-direction": flexDirectionMap,
   "border-radius": {
     "0px": "none",
@@ -49,6 +75,7 @@ const twMap = {
   "justify-content": {
     "flex-start": "start",
     "flex-end": "end",
+    "space-between": "between",
     center: "center",
   },
   "align-items": {
@@ -150,6 +177,8 @@ function tailwindClassNames(css, node) {
     gap: "gap",
     top: "top",
     left: "left",
+    right: "right",
+    bottom: "bottom",
     "justify-content": "justify",
     "align-items": "items",
     "align-self": "self",
