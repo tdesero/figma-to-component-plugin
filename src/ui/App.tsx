@@ -151,7 +151,9 @@ export default function App() {
         />
         <ToolbarBtn
           icon={<SettingsIcon />}
+          style={{ marginLeft: "auto" }}
           label="Settings"
+          hideLabel
           isSelected={selectedTab === "settings"}
           onClick={() => {
             setSelectedTab("settings");

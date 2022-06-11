@@ -76,8 +76,8 @@ export default function Settings({ settings }) {
         </Button>
       </div>
       <Spacer size="5" />
-      <Typography tag="p" variant="copy-bold">
-        After Updating your settings rerun the Plugin
+      <Typography tag="p" variant="copy">
+        After updating your settings select a frame.
       </Typography>
     </div>
   );
