@@ -2,7 +2,7 @@ export function getTreeElementByProperty(tree, property: string, value): any {
   function searchTree(element, property, value) {
     if (element[property] === value) {
       return element;
-    } else if (element.children != null) {
+    } else if (element.children != null || element.children != undefined) {
       var i: number;
       var result = null;
       for (i = 0; result == null && i < element.children.length; i++) {

@@ -39,7 +39,7 @@ export function printCSS(tree): string {
           css += `.${s.name} {${s.css}}\n`;
         });
       }
-      if (treeElement.children.length > 0) {
+      if (treeElement.children?.length > 0) {
         theChildren(treeElement.children, isVariant);
       }
     });

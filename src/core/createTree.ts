@@ -135,8 +135,6 @@ export function createTree(
     });
   }
 
-  console.log("origNodeChi", originalNode.children.length);
-
   if (originalNode.children?.length > 0) {
     theChildren(originalNode.children, tree.children);
   }
