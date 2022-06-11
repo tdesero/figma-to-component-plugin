@@ -1,0 +1,24 @@
+.spacer--1 {
+  height: 4px;
+  width: 4px;
+}
+
+.spacer--2 {
+  height: 8px;
+  width: 8px;
+}
+
+.spacer--3 {
+  height: 16px;
+  width: 16px;
+}
+
+.spacer--4 {
+  height: 24px;
+  width: 24px;
+}
+
+.spacer--5 {
+  height: 32px;
+  width: 32px;
+}

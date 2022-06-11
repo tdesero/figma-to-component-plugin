@@ -4,8 +4,17 @@ export const PARAMETERS = {
     REACT: "react",
     HTML: "html",
   },
-  CSS_STYLE: {
-    DEFAULT: "default",
+};
+
+export const SETTINGS = {
+  CSS_STYLES: {
+    DEFAULT: "",
     BEM: "bem",
+    //CSS_MODULES: "css-modules",
+  },
+  VAR_STYLES: {
+    NONE: "",
+    CSS: "css",
+    SCSS: "scss",
   },
 };
