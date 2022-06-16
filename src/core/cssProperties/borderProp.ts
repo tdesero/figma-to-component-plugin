@@ -18,25 +18,29 @@ function borderProp(node) {
     node.strokeBottomWeight,
     node.strokeLeftWeight,
   ];
-  if (valuesAreSame(strokeWeights)) {
+  if (valuesAreSame(strokeWeights) && !(node.type === "LINE")) {
     borderWidthValue = cleanNumber(node.strokeTopWeight) + "px";
+  } else if (node.type === "LINE") {
+    borderWidthValue = cleanNumber(node.strokeWeight) + "px 0 0 0";
   } else {
     borderWidthValue = strokeWeights
       .map((w) => cleanNumber(w) + "px")
       .join(" ");
   }
 
+  const borderStyle = node.dashPattern?.length > 0 ? "dashed" : "solid";
+
   if (node.strokes?.[0]?.type === "GRADIENT_LINEAR") {
     return `
     border-width: ${borderWidthValue}; 
-    border-style: solid; 
+    border-style: ${borderStyle}; 
     border-image: ${strokeColor(node)}; 
     border-image-slice: 1;
     `;
   }
 
   return `
-  border: solid ${strokeColor(node)}; 
+  border: ${borderStyle} ${strokeColor(node)}; 
   border-width: ${borderWidthValue};
   `;
 }
