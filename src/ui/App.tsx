@@ -11,6 +11,7 @@ import { PreviewIFrame } from "./components/PreviewIFrame";
 import { CodePreview } from "./components/CodePreview";
 import { toPascalCase } from "./helpers/toPascalCase";
 import Settings from "./components/Settings";
+import reactTransform from "./transformers/reactTransform";
 
 var beautify = require("js-beautify");
 
@@ -84,12 +85,7 @@ export default function App() {
       let code = "";
       switch (framework) {
         case "react":
-          code =
-            "export const " +
-            name +
-            " = () => { \nreturn(\n" +
-            beautify.html(html.replace(/class=/g, "className=")) +
-            "\n)}";
+          code = reactTransform(html, name, beautify);
           break;
         default:
           code = html;

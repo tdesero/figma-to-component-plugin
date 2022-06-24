@@ -14,7 +14,9 @@ figma.ui.onmessage = (msg) => {
 };
 
 async function createHTMLandCSS(selection, parameters, { cssStyle }) {
-  const tree = createTree(selection, { cssStyle });
+  const tree = createTree(selection, {
+    cssStyle,
+  });
   console.log("tree", tree);
 
   const css =
@@ -24,7 +26,7 @@ async function createHTMLandCSS(selection, parameters, { cssStyle }) {
   const html =
     parameters.framework === PARAMETERS.FRAMEWORKS.TAILWIND
       ? await tailwind(tree)
-      : await printHTML(tree);
+      : await printHTML(tree, { framework: parameters.framework });
 
   return {
     html,

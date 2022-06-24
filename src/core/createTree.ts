@@ -1,4 +1,8 @@
-import { makeSafeForCSS, willBeRenderedAsSVG } from "./helpers";
+import {
+  cleanComponentPropertyName,
+  makeSafeForCSS,
+  willBeRenderedAsSVG,
+} from "./helpers";
 import { nodeCSS } from "./nodeCSS";
 import { getTreeElementByProperty } from "./getTreeElementByProperty";
 import { getTextSegments } from "./getTextSegments";
@@ -64,6 +68,36 @@ export function createTree(
     }
   }
 
+  /* componentProperties start */
+  let componentPropertiesDefinitions = null as null | object;
+
+  if (
+    isComponentSet ||
+    (selectionNode.type === "COMPONENT" &&
+      selectionNode.parent !== "COMPONENT_SET")
+  ) {
+    componentPropertiesDefinitions = {};
+    try {
+      for (const [key, val] of Object.entries(
+        selectionNode.componentPropertyDefinitions
+      ) as Array<any>) {
+        const shortName = cleanComponentPropertyName(key);
+        if (val.type !== "INSTANCE_SWAP") {
+          componentPropertiesDefinitions[shortName] =
+            val.type !== "BOOLEAN"
+              ? { ...val, defaultValue: `'${val.defaultValue}'` }
+              : val;
+        }
+      }
+    } catch {
+      console.error("componentProperties not working");
+      componentPropertiesDefinitions = null;
+    }
+  } else {
+    componentPropertiesDefinitions = null;
+  }
+  /* componentProperties end */
+
   componentName = uniqueName(makeSafeForCSS(selectionNode.name)).name;
 
   const createTreeElement = ({
@@ -88,6 +122,7 @@ export function createTree(
       textSegments: [],
       baseSelector,
       variants: isComponentSet && [],
+      componentPropertiesDefinitions,
     };
   };
 
