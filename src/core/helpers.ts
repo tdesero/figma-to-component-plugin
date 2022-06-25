@@ -74,6 +74,18 @@ export function cleanNumber(n, toFixed = 2): Number {
   return parseFloat(Number(n).toFixed(toFixed));
 }
 
+export function toCamelCase(str) {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, "");
+}
+
+export function cleanComponentPropertyName(key) {
+  return toCamelCase(key.split("#")[0]);
+}
+
 export function valuesAreSame(arr: Array<any>) {
   return arr.every((v) => v === arr[0]);
 }
