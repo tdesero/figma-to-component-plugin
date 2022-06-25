@@ -135,7 +135,8 @@ export function createTree(
 
   function theChildren(children, treeChildren, baseSelector = "") {
     children.forEach((node) => {
-      if (!node.visible) return;
+      // is not visible AND does not have a visibility componentProperty assigned
+      if (!node.visible && !node.componentPropertyReferences?.visible) return;
       const css = nodeCSS(node);
       const uniqueNameInformation = uniqueName(
         makeSafeForCSS(node.name),
