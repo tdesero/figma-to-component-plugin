@@ -16,12 +16,12 @@ function reactTransform(html, componentName, beautify) {
     );
   }
 
-  const variantsClassName = `'${componentName.toLowerCase()}'${variantsMatch?.[0]
+  const variantsClassName = `'${componentName.toLowerCase()}${variantsMatch?.[0]
     .replace("<!-- variants: ", "")
     .replace(" -->", "")
     .split(", ")
     .sort()
-    .map((v) => "+ '--" + v + `-' + ${v}`)
+    .map((v, idx) => `${idx !== 0 ? "+ '" : ""}--` + v + `-' + ${v}`)
     .join("")}`;
 
   const code = `

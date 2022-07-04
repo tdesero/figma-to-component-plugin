@@ -8,11 +8,12 @@ export function eraseDuplicateCSS(
   // detect css lines included in base but not in modifier and unset the value
   const cssPropsToBeUnset = baseArr
     .map((l) => {
-      return l.split(":")?.[0];
+      return l.split(":")?.[0].trim();
     })
     .filter((prop) => {
-      return !modifierCSS.includes(`${prop}:`);
+      return !modArr.some((str) => str.startsWith(`${prop}:`));
     })
+    .filter((p) => p !== "") // get ridd of empty strings
     .map((prop) => prop + ": unset");
 
   return modArr
