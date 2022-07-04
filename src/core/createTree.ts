@@ -178,7 +178,11 @@ export function createTree(
   /* Component Variants */
   if (isComponentSet && selectionNode.children?.length > 0) {
     selectionNode.children.forEach((variant) => {
-      const variantName = makeSafeForCSS(`${componentName}--${variant?.name}`);
+      // the variant name contains all property information but it needs to be sorted correctly
+      const sortedVariantName = variant?.name?.split(", ").sort().join(", ");
+      const variantName = makeSafeForCSS(
+        `${componentName}--${sortedVariantName}`
+      );
 
       const baseSelector = "." + variantName;
 
