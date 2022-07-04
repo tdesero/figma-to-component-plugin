@@ -19,6 +19,17 @@ export async function printHTML(tree, { framework }): Promise<string> {
             .join(", ") +
           " -->"
         : "";
+
+    if (tree.variants) {
+      html +=
+        "<!-- variants: " +
+        componentPropsList
+          .filter(
+            (key) => tree.componentPropertiesDefinitions[key].type === "VARIANT"
+          )
+          .join(", ") +
+        " -->";
+    }
   }
 
   const componentPropsCharactersReference = (node) => {
