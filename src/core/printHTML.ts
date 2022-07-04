@@ -46,13 +46,6 @@ export async function printHTML(tree, { framework }): Promise<string> {
     if (children?.length > 0) {
       const all = await Promise.all(
         children.map(async (treeElement) => {
-          if (willBeRenderedAsSVG(treeElement)) {
-            return await createSVG(treeElement.originalNode, treeElement.name);
-          }
-          const innerText = treeElement.textSegments
-            ? printTextSegments(treeElement.textSegments)
-            : "";
-
           const visibleProp = componentPropsVisibleReference(
             treeElement.originalNode
           );
@@ -61,6 +54,17 @@ export async function printHTML(tree, { framework }): Promise<string> {
             ? `<!-- if: ${visibleProp} -->`
             : "";
           const visiblePropEnd = visibleProp ? "<!-- end if -->" : "";
+
+          if (willBeRenderedAsSVG(treeElement)) {
+            return (
+              visiblePropStart +
+              (await createSVG(treeElement.originalNode, treeElement.name)) +
+              visiblePropEnd
+            );
+          }
+          const innerText = treeElement.textSegments
+            ? printTextSegments(treeElement.textSegments)
+            : "";
 
           return `${visiblePropStart}<div class="${treeElement.name}">\n${
             componentPropsCharactersReference(treeElement.originalNode) ||
